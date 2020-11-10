@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "shared.h"
+#include "http_protocol/http.h"
 
 
 #define BACKLOG 5
@@ -34,11 +35,11 @@ int main(int argc, const char * argv[])
 
         cfd = dc_accept(sfd, NULL, NULL);
 
-        while((num_read = dc_read(cfd, buf, BUF_SIZE)) > 0)
-        {
-            dc_write(STDOUT_FILENO, buf, num_read);
-        }
-        
+        dc_read(cfd, buf, BUF_SIZE);
+
+        http * my_http = http_create((void *)0);
+        my_http->parse_request(buf);
+
         dc_close(cfd);
     }
     
