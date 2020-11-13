@@ -3,20 +3,27 @@
 
 #include <stdlib.h>
 
-typedef struct pair pair;
-typedef struct str_map str_map;
+typedef struct  {
+    int is_occupied;
+	char *key;
+	char *value;
+} pair;
 
-struct str_map {
+typedef struct {
     unsigned int capacity;
 	unsigned int count;
 	pair * pairs;
-};
+    char ** keys;
+} str_map;
+
 
 str_map * sm_create(size_t capacity);
-void sm_put(str_map * map, char * key, char * value);
-char * sm_get(str_map * map, char * key);
-int sm_exists(str_map * map, char * value);
+void sm_put(str_map * map, const char * key, const char * value);
+char * sm_get(str_map * map, const char * key);
+int sm_exists(str_map * map, const char * value);
 void sm_destroy(str_map * map);
 void sm_print(str_map * map);
+size_t sm_size(str_map * map);
+char ** sm_get_keys(str_map * map);
 
 #endif

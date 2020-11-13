@@ -11,6 +11,7 @@
 #define METHOD_GET 2
 
 typedef struct  {
+    int method;
     int response_code;
     char * request_path;
     str_map * header_fields;
@@ -19,7 +20,7 @@ typedef struct  {
 
 typedef struct  {
     int method;
-    char * request_path;
+    char * request_uri;
     char * http_version;
     str_map * header_fields;
     char * request_body;
@@ -38,5 +39,6 @@ http_response * build_response(http_request * request);
 void send_response(http_response * response, int cfd);
 void http_destroy(http * http);
 void http_request_destroy(http_request * request);
+void http_response_destroy(http_response * response);
 
 #endif

@@ -1,20 +1,14 @@
-#include "str_map.h"
-
 #include <stdio.h>
 #include <string.h>
 
 #define LOAD_FACTOR 0.7
 
-struct pair {
-    int is_occupied;
-	char *key;
-	char *value;
-};
+#include "str_map.h"
 
 static unsigned long hash(const char *str);
 static void pairs_destroy(pair * pairs, size_t pair_count);
 static void sm_put_closed_hashing(str_map * map, char * key, char * value);
-static void sm_set_pair(pair * pair_, char * key, char * value);
+static void sm_set_pair(str_map * map, pair * pair, char * key, char * value);
 static void sm_double_capacity(str_map * pair);
 static void sm_swap(str_map * left, str_map * right);
 static pair * sm_get_pair(str_map * map, char * key);
@@ -24,12 +18,15 @@ str_map * sm_create(size_t capacity) {
     map->capacity = capacity;
     map->count = 0;
     map->pairs = malloc(map->capacity * sizeof(pair));
+    map->keys = malloc(map->capacity * sizeof(char *));
+
     memset(map->pairs, 0, map->capacity * sizeof(pair));
+    memset(map->keys, 0, map->capacity * sizeof(char *));
 
     return map;
 }
 
-void sm_put(str_map * map, char * key, char * value) {
+void sm_put(str_map * map, const char * key, const char * value) {
     if (map == NULL) return;
     if (key == NULL) return;
     if (value == NULL) return;
@@ -53,7 +50,7 @@ void sm_put(str_map * map, char * key, char * value) {
     return;
 }
 
-char * sm_get(str_map * map, char * key) {
+char * sm_get(str_map * map, const char * key) {
     pair * ppair = sm_get_pair(map, key);
 
     if (ppair == NULL) {
@@ -63,7 +60,7 @@ char * sm_get(str_map * map, char * key) {
     }
 }
 
-int sm_exists(str_map * map, char * key) {
+int sm_exists(str_map * map, const char * key) {
     
     if (map == NULL) {
         return 0;
@@ -80,8 +77,37 @@ int sm_exists(str_map * map, char * key) {
     return 1;
 }
 
+size_t sm_size(str_map * map) {
+    if (map == NULL) return 0;
+    return map->count;
+}
+
+char ** sm_get_keys(str_map * map) {
+    if (map == NULL) return NULL;
+    return map->keys;
+}
+
+void sm_destroy(str_map * map) {
+    if (map == NULL) return;
+
+    for (size_t i = map->count; i < map->count; i++) {
+        free(map->keys[i]);
+    }
+    free(map->keys);
+    pairs_destroy(map->pairs, map->capacity);
+    map->count = 0;
+    map->capacity = 0;
+    free(map);
+}
+
+void sm_print(str_map * map) {
+    pair * pairs = map->pairs;
+    for (size_t i = 0; i < map->capacity; i++) {
+        printf("index: %ld key: %s value: %s\n", i, pairs[i].key, pairs[i].value);
+    }
+}
+
 static pair * sm_get_pair(str_map * map, char * key) {
-    
     pair * pairs = map->pairs;
     size_t hashed_index = hash(key) % map->capacity;
     size_t dest_index = hashed_index;
@@ -98,22 +124,6 @@ static pair * sm_get_pair(str_map * map, char * key) {
     } while (pairs[dest_index].is_occupied != 0 && dest_index != hashed_index);
 
     return NULL;
-}
-
-void sm_destroy(str_map * map) {
-    if (map == NULL) return;
-
-    pairs_destroy(map->pairs, map->capacity);
-    map->count = 0;
-    map->capacity = 0;
-    free(map);
-}
-
-void sm_print(str_map * map) {
-    pair * pairs = map->pairs;
-    for (size_t i = 0; i < map->capacity; i++) {
-        printf("index: %ld key: %s value: %s\n", i, pairs[i].key, pairs[i].value);
-    }
 }
 
 static void sm_double_capacity(str_map * map) {
@@ -134,14 +144,17 @@ static void sm_swap(str_map * left, str_map * right) {
     size_t temp_capacity = left->capacity;
     size_t temp_count = left->count;
     pair * temp_pairs = left->pairs;
+    char ** temp_keys = left->keys;
 
     left->capacity = right->capacity;
     left->count = right->count;
     left->pairs = right->pairs;
+    left->keys = right->keys;
 
     right->capacity = temp_capacity;
     right->count = temp_count;
     right->pairs = temp_pairs;
+    right->keys = temp_keys;
 }
 
 static void sm_put_closed_hashing(str_map * map, char * key, char * value) {
@@ -150,8 +163,7 @@ static void sm_put_closed_hashing(str_map * map, char * key, char * value) {
     pair * pair_array = map->pairs;
 
     if (pair_array[dest_index].is_occupied == 0) {
-        sm_set_pair(&pair_array[dest_index], key, value);
-        map->count++;
+        sm_set_pair(map, &pair_array[dest_index], key, value);
         return;
     } else {
         dest_index = (dest_index + 1) % map->capacity;
@@ -162,22 +174,25 @@ static void sm_put_closed_hashing(str_map * map, char * key, char * value) {
     }
 
     if (dest_index != hashed_index) {
-        sm_set_pair(&pair_array[dest_index], key, value);
-        map->count++;
+        sm_set_pair(map, &pair_array[dest_index], key, value);
     }
 }
 
-static void sm_set_pair(pair * pair, char * key, char * value) {
+static void sm_set_pair(str_map * map, pair * pair, char * key, char * value) {
     size_t key_len = strlen(key);
     size_t value_len = strlen(value);
 
+    map->keys[map->count] = malloc(key_len + 1);
     pair->key = malloc(key_len + 1);
     pair->value = malloc(value_len + 1);
 
+    strcpy(map->keys[map->count], key);
     strcpy(pair->key, key);
     strcpy(pair->value, value);
 
     pair->is_occupied = 1;
+
+    map->count++;
 }
 
 static void pairs_destroy(pair * pairs, size_t pair_count) {
