@@ -15,7 +15,6 @@ typedef struct  {
     int response_code;
     char * request_path;
     str_map * header_fields;
-    char * response_body;
 } http_response;
 
 typedef struct  {

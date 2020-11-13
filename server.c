@@ -15,20 +15,6 @@
 #define BACKLOG 5
 
 int main(void) {
-    // str_map * my_map = sm_create(4);
-    // sm_put(my_map, "key1", "value1");
-    // sm_put(my_map, "key2", "value2");
-    // sm_put(my_map, "key3", "value3");
-    // sm_put(my_map, "key4", "value4");
-    // sm_put(my_map, "key5", "value5");
-    // sm_put(my_map, "key6", "value6");
-
-    // char ** keys = sm_get_keys(my_map);
-    // size_t map_size = sm_size(my_map);
-    // for (size_t i = 0; i < map_size; i++) {
-    //     printf("entry %d: %s\n", i, keys[i]);
-    // }
-
     struct sockaddr_in addr;
     int sfd;
 
@@ -62,7 +48,7 @@ int main(void) {
         dc_close(cfd);
     }
 
-    //dc_close(sfd); <- never reached because for(;;) never ends.
+    // //dc_close(sfd); <- never reached because for(;;) never ends.
 
     return EXIT_SUCCESS;
 }

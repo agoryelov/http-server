@@ -26,7 +26,7 @@ str_map * sm_create(size_t capacity) {
     return map;
 }
 
-void sm_put(str_map * map, const char * key, const char * value) {
+void sm_put(str_map * map, char * key, char * value) {
     if (map == NULL) return;
     if (key == NULL) return;
     if (value == NULL) return;
@@ -50,7 +50,7 @@ void sm_put(str_map * map, const char * key, const char * value) {
     return;
 }
 
-char * sm_get(str_map * map, const char * key) {
+char * sm_get(str_map * map, char * key) {
     pair * ppair = sm_get_pair(map, key);
 
     if (ppair == NULL) {
@@ -60,7 +60,7 @@ char * sm_get(str_map * map, const char * key) {
     }
 }
 
-int sm_exists(str_map * map, const char * key) {
+int sm_exists(str_map * map, char * key) {
     
     if (map == NULL) {
         return 0;
@@ -90,7 +90,8 @@ char ** sm_get_keys(str_map * map) {
 void sm_destroy(str_map * map) {
     if (map == NULL) return;
 
-    for (size_t i = map->count; i < map->count; i++) {
+    size_t map_capacity = map->capacity;
+    for (size_t i = 0; i < map_capacity; i++) {
         free(map->keys[i]);
     }
     free(map->keys);
@@ -98,6 +99,17 @@ void sm_destroy(str_map * map) {
     map->count = 0;
     map->capacity = 0;
     free(map);
+}
+
+static void pairs_destroy(pair * pairs, size_t pair_count) {
+    if (pairs == NULL) return;
+    
+    for (size_t i = 0; i < pair_count; i++) {
+        pairs[i].is_occupied = 0;
+        free(pairs[i].key);
+        free(pairs[i].value);
+    }
+    free(pairs);
 }
 
 void sm_print(str_map * map) {
@@ -193,17 +205,6 @@ static void sm_set_pair(str_map * map, pair * pair, char * key, char * value) {
     pair->is_occupied = 1;
 
     map->count++;
-}
-
-static void pairs_destroy(pair * pairs, size_t pair_count) {
-    if (pairs == NULL) return;
-    
-    for (size_t i = 0; i < pair_count; i++) {
-        pairs[i].is_occupied = 0;
-        free(pairs[i].key);
-        free(pairs[i].value);
-    }
-    free(pairs);
 }
 
 static unsigned long hash(const char *str)

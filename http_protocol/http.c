@@ -71,7 +71,6 @@ http_response * build_response(http_request * request) {
     
     str_map * header_fields = sm_create(4);
     sm_put(header_fields, "Server", "DataComm/0.1");
-    //sm_put(header_fields, "Date", get_local_time());
 
     http_response * response = malloc(sizeof(http_response));
     response->header_fields = header_fields;
@@ -173,7 +172,6 @@ void http_response_destroy(http_response * response) {
 
     sm_destroy(response->header_fields);
     free(response->request_path);
-    //free(response->response_body);
     free(response);
 }
 
