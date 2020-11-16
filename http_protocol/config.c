@@ -30,10 +30,10 @@ void destroy_config(config *cfg) {
 }
 
 void set_default_config(config *cfg) {
-    cfg->root_dir = "../server_directory";
-    cfg->index_page = "/index.html";
-    cfg->not_found_page = "/404.html";
-    cfg->mode = "processes";
+    cfg->root_dir = strdup("../server_directory");
+    cfg->index_page = strdup("/index.html");
+    cfg->not_found_page = strdup("/404.html");
+    cfg->mode = strdup("processes");
     cfg->port = 80;
 }
 
@@ -56,20 +56,20 @@ void set_file_config(config *cfg) {
 
     const char *root_dir, *index_page, *not_found_page, *mode;
     if (config_lookup_string(&lib_config, "mode", &mode) == CONFIG_TRUE) {
-        cfg->mode = malloc(sizeof(*mode) + 1);
-        strncpy(cfg->mode, mode, strlen(mode) + 1);
+        free(cfg->mode);
+        cfg->mode = strdup(mode);
     }
     if (config_lookup_string(&lib_config, "directories.root", &root_dir) == CONFIG_TRUE) {
-        cfg->root_dir = malloc(sizeof(*root_dir) + 1);
-        strncpy(cfg->root_dir, root_dir, strlen(root_dir) + 1);
+        free(cfg->root_dir);
+        cfg->root_dir = strdup(root_dir);
     }
     if (config_lookup_string(&lib_config, "pages.index", &index_page) != CONFIG_FALSE) {
-        cfg->index_page = malloc(sizeof(*index_page) + 1);
-        strncpy(cfg->index_page, index_page, strlen(index_page) + 1);
+        free(cfg->index_page);
+        cfg->index_page = strdup(index_page);
     }
     if (config_lookup_string(&lib_config, "pages.not_found", &not_found_page) != CONFIG_FALSE) {
-        cfg->not_found_page = malloc(sizeof(*mode) + 1);
-        strncpy(cfg->not_found_page, not_found_page, strlen(not_found_page) + 1);
+        free(cfg->not_found_page);
+        cfg->not_found_page = strdup(not_found_page);
     }
 
     config_destroy(&lib_config);
