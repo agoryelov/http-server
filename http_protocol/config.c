@@ -58,11 +58,11 @@ void set_file_config(config *cfg) {
     config_lookup_int(&lib_config, "port", &cfg->port);
 
     const char *root_dir, *index_page, *not_found_page, *mode;
-    if (config_lookup_string(&lib_config, "mode", &mode) == CONFIG_TRUE) {
+    if (config_lookup_string(&lib_config, "mode", &mode) != CONFIG_FALSE) {
         free(cfg->mode);
         cfg->mode = strdup(mode);
     }
-    if (config_lookup_string(&lib_config, "directories.root", &root_dir) == CONFIG_TRUE) {
+    if (config_lookup_string(&lib_config, "directories.root", &root_dir) != CONFIG_FALSE) {
         free(cfg->root_dir);
         cfg->root_dir = strdup(root_dir);
     }
