@@ -7,10 +7,10 @@
  * The config struct.
  */
 typedef struct {
-    char * root_dir;
-    char * index_page;
-    char * not_found_page;
-    char * mode;
+    char *root_dir;
+    char *index_page;
+    char *not_found_page;
+    char *mode;
     int port;
 } config;
 
@@ -28,6 +28,6 @@ void destroy_config(config *cfg);
  * 4) Command line arguments
  * @return - pointer to the config
  */
-config * get_config(int argc, char **argv);
+config *get_config(int argc, char **argv);
 
 #endif

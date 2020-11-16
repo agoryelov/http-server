@@ -8,8 +8,11 @@
 #define CONFIG_PATH "../config.cfg"
 
 void set_default_config(config *cfg);
+
 void set_file_config(config *cfg);
+
 void set_env_config(config *cfg);
+
 void set_cmd_line_config(config *cfg, int argc, char **argv);
 
 config *get_config(int argc, char **argv) {
@@ -81,22 +84,26 @@ void set_file_config(config *cfg) {
  */
 void set_env_config(config *cfg) {
     char *env_var;
-    if((env_var = getenv("DC_HTTP_PORT")) != NULL) {
-        cfg->port = (int) strtoul(env_var, &env_var, 0);
+    if ((env_var = getenv("DC_HTTP_PORT")) != NULL) {
+        char *ptr;
+        int port = (int) strtoul(env_var, &ptr, 0);
+        if (*env_var != '\0' && *ptr == '\0') {
+            cfg->port = port;
+        }
     }
-    if((env_var = getenv("DC_HTTP_MODE")) != NULL) {
+    if ((env_var = getenv("DC_HTTP_MODE")) != NULL) {
         free(cfg->mode);
         cfg->mode = strdup(env_var);
     }
-    if((env_var = getenv("DC_HTTP_ROOT_DIR")) != NULL) {
+    if ((env_var = getenv("DC_HTTP_ROOT_DIR")) != NULL) {
         free(cfg->root_dir);
         cfg->root_dir = strdup(env_var);
     }
-    if((env_var = getenv("DC_INDEX_PAGE")) != NULL) {
+    if ((env_var = getenv("DC_INDEX_PAGE")) != NULL) {
         free(cfg->index_page);
         cfg->index_page = strdup(env_var);
     }
-    if((env_var = getenv("DC_NOT_FOUND_PAGE")) != NULL) {
+    if ((env_var = getenv("DC_NOT_FOUND_PAGE")) != NULL) {
         free(cfg->not_found_page);
         cfg->not_found_page = strdup(env_var);
     }
@@ -122,10 +129,19 @@ void set_cmd_line_config(config *cfg, int argc, char **argv) {
     };
 
     while ((opt = getopt_long(argc, argv, "", long_options, &opt_index)) != -1) {
+        if (optarg == NULL) {
+            continue;
+        }
+
         switch (opt) {
-            case 'p':
-                cfg->port = (int) strtoul(optarg, &optarg, 0);
+            case 'p': {
+                char *ptr;
+                int port = (int) strtoul(optarg, &ptr, 0);
+                if (*optarg != '\0' && *ptr == '\0') {
+                    cfg->port = port;
+                }
                 break;
+            }
             case 'm':
                 free(cfg->mode);
                 cfg->mode = strdup(optarg);
