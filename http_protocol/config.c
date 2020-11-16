@@ -99,11 +99,11 @@ void set_env_config(config *cfg) {
         free(cfg->root_dir);
         cfg->root_dir = strdup(env_var);
     }
-    if ((env_var = getenv("DC_INDEX_PAGE")) != NULL) {
+    if ((env_var = getenv("DC_HTTP_INDEX_PAGE")) != NULL) {
         free(cfg->index_page);
         cfg->index_page = strdup(env_var);
     }
-    if ((env_var = getenv("DC_NOT_FOUND_PAGE")) != NULL) {
+    if ((env_var = getenv("DC_HTTP_NOT_FOUND_PAGE")) != NULL) {
         free(cfg->not_found_page);
         cfg->not_found_page = strdup(env_var);
     }
