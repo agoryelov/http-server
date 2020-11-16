@@ -100,15 +100,19 @@ void set_cmd_line_config(config *cfg, int argc, char **argv) {
                 cfg->port = (int) strtoul(optarg, &optarg, 0);
                 break;
             case 'm':
+                free(cfg->mode);
                 cfg->mode = strdup(optarg);
                 break;
             case 'r':
+                free(cfg->root_dir);
                 cfg->root_dir = strdup(optarg);
                 break;
             case 'i':
+                free(cfg->index_page);
                 cfg->index_page = strdup(optarg);
                 break;
             case 'n':
+                free(cfg->not_found_page);
                 cfg->not_found_page = strdup(optarg);
                 break;
             default:
