@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <unistd.h>
 #include "config.h"
 
 #define CONFIG_PATH "../config.cfg"
 
-config *get_config(int argc, char **argv);
-void destroy_config(config *cfg);
 void set_default_config(config *cfg);
 void set_file_config(config *cfg);
 void set_env_config(config *cfg);
@@ -17,6 +16,7 @@ config *get_config(int argc, char **argv) {
     config *cfg = malloc(sizeof(config));
     set_default_config(cfg);
     set_file_config(cfg);
+    set_env_config(cfg);
     set_cmd_line_config(cfg, argc, argv);
     return cfg;
 }
@@ -76,6 +76,33 @@ void set_file_config(config *cfg) {
 }
 
 /**
+ * Sets the environment variables as values for the config.
+ * @param cfg - the config
+ */
+void set_env_config(config *cfg) {
+    char *env_var;
+    if((env_var = getenv("DC_HTTP_PORT")) != NULL) {
+        cfg->port = (int) strtoul(env_var, &env_var, 0);
+    }
+    if((env_var = getenv("DC_HTTP_MODE")) != NULL) {
+        free(cfg->mode);
+        cfg->mode = strdup(env_var);
+    }
+    if((env_var = getenv("DC_HTTP_ROOT_DIR")) != NULL) {
+        free(cfg->root_dir);
+        cfg->root_dir = strdup(env_var);
+    }
+    if((env_var = getenv("DC_INDEX_PAGE")) != NULL) {
+        free(cfg->index_page);
+        cfg->index_page = strdup(env_var);
+    }
+    if((env_var = getenv("DC_NOT_FOUND_PAGE")) != NULL) {
+        free(cfg->not_found_page);
+        cfg->not_found_page = strdup(env_var);
+    }
+}
+
+/**
  * Parses command line arguments for any options passed in,
  * and sets any valid values for the config.
  * Valid options are: port, mode, root-dir, index-page, not-found-page
@@ -86,7 +113,7 @@ void set_file_config(config *cfg) {
 void set_cmd_line_config(config *cfg, int argc, char **argv) {
     int opt;
     int opt_index = 0;
-    static struct option long_options[] = {
+    struct option long_options[] = {
             {"port",           optional_argument, 0, 'p'},
             {"mode",           optional_argument, 0, 'm'},
             {"root-dir",       optional_argument, 0, 'r'},

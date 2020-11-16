@@ -21,7 +21,7 @@ typedef struct {
 void destroy_config(config *cfg);
 
 /**
- * Sets the config based on values in the order:
+ * Sets the config based on values in the order (smaller is set first):
  * 1) Default hard-coded values
  * 2) The config file
  * 3) Environment variables
