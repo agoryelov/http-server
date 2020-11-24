@@ -6,7 +6,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <stdio.h>
+#include <dc/unistd.h>
 #include <unistd.h>
 
 #define CRLF "\r\n"
@@ -111,11 +111,11 @@ http_response * build_response(http_request * request) {
 
 void send_response(http_response * response, int cfd) {
     const char * version = "HTTP/1.0 ";
-    write(cfd, version, strlen(version));
+    dc_write(cfd, version, strlen(version));
 
     const char * status_phrase = get_status_phrase(response->response_code);
-    write(cfd, status_phrase, strlen(status_phrase));
-    write(cfd, CRLF, 2);
+    dc_write(cfd, status_phrase, strlen(status_phrase));
+    dc_write(cfd, CRLF, 2);
 
     str_map * header_fields = response->header_fields;
     size_t header_lines = sm_size(header_fields);
@@ -124,11 +124,11 @@ void send_response(http_response * response, int cfd) {
         char buf[200];
         sprintf(buf, "%s: %s", header_keys[i], sm_get(header_fields, header_keys[i]));
         int len = strlen(buf);
-        write(cfd, buf, len);
-        write(cfd, CRLF, 2);
+        dc_write(cfd, buf, len);
+        dc_write(cfd, CRLF, 2);
     }
 
-    write(cfd, CRLF, 2);
+    dc_write(cfd, CRLF, 2);
 
     if (response->method == METHOD_HEAD) return;
     if (response->response_code == 500) return;
@@ -138,10 +138,10 @@ void send_response(http_response * response, int cfd) {
 
     ssize_t num_read;
     char buf[200];
-    num_read = read(content_fd, buf, 200);
+    num_read = dc_read(content_fd, buf, 200);
     while (num_read > 0) {
-        write(cfd, buf, num_read);
-        num_read = read(content_fd, buf, 200);
+        dc_write(cfd, buf, num_read);
+        num_read = dc_read(content_fd, buf, 200);
     }
     close(content_fd);
 }
