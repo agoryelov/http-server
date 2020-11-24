@@ -24,3 +24,7 @@ target_compile_options(server PRIVATE -Wpedantic -Wall -Wextra)
 add_executable(client client.c)
 target_link_libraries(client dc)
 target_compile_options(client PRIVATE -Wpedantic -Wall -Wextra)
+
+add_executable(ncurses_settings ncurses.c)
+target_link_libraries(ncurses_settings form menu panel ncurses config)
+target_compile_options(ncurses_settings PRIVATE -Wpedantic -Wall -Wextra)
