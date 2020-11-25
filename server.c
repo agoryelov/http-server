@@ -10,6 +10,8 @@
 #include <semaphore.h> 
 #include <pthread.h>
 #include <fcntl.h>
+#include <signal.h>
+
 #include "shared.h"
 #include "http_protocol/http.h"
 // TODO: fix backlog issue  
@@ -40,7 +42,7 @@ void* thread_func(void* arg){
     sem_post(&data->get_semaphore);
     sem_post(&data->empty_semaphore);
 
-    sleep(2);
+    sleep(2); // TODO Remove all instances of thread id they are for testing
     char request_buf[BUF_SIZE];
     for(;;) {
         sem_wait(&data->occupied_semaphore);
@@ -54,18 +56,16 @@ void* thread_func(void* arg){
         
         sem_post(&data->get_semaphore);
         sem_post(&data->empty_semaphore);
-        num_read = dc_read(x, request_buf, BUF_SIZE);
+        num_read = read(x, request_buf, BUF_SIZE);
         //printf("request: %s\n", request_buf);
 
         http * my_http = http_create(NULL);
         http_request * request = my_http->parse_request(request_buf, num_read);
         http_response * response = build_response(request);
         printf("thread #%d sleeping...\n", my_thread_id);
-        sleep(5);
+        sleep(1);
         printf("thread #%d woke up...\n", my_thread_id);
-        //char * response = "HTTP/1.0 404 Not Found\r\n\r\n";
-        //int response_len = strlen(response);
-        //dc_write(x, response, response_len);
+
         send_response(response, x);
         
         http_request_destroy(request);
@@ -81,6 +81,7 @@ int main(void) {
     struct sockaddr_in addr;
     struct sockaddr_storage addr_storage;
     int sfd;
+    signal(SIGPIPE, SIG_IGN);
 
     sfd = dc_socket(AF_INET, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof(struct sockaddr_in));
@@ -99,7 +100,7 @@ int main(void) {
     sem_init(&data.get_semaphore, 0, 1);
 
     data.running = 0;
-    for(int i = 0; i < 20; i++) {
+    for(int i = 0; i < 10; i++) {
         pthread_t thread;
         sem_wait(&data.empty_semaphore);
         sem_wait(&data.put_semaphore);
@@ -107,7 +108,6 @@ int main(void) {
         pthread_create(&thread, NULL, thread_func, &data);
         sem_post(&data.put_semaphore);
         sem_post(&data.occupied_semaphore);
-        
         
     }
     // sem_wait(&data.empty_semaphore);
@@ -117,15 +117,16 @@ int main(void) {
     // sem_post(&data.occupied_semaphore);
 
     socklen_t addr_size;
+    char request_buf[BUF_SIZE];
+    ssize_t num_read;
     for(;;)
     {
-        //addr_size = sizeof(addr_storage);
-        
+        new_socket = accept(sfd, NULL, NULL);
         sem_wait(&data.empty_semaphore);
         sem_wait(&data.put_semaphore);
-        new_socket = accept(sfd, NULL, NULL);
-        data.client_fd = new_socket;
         
+        data.client_fd = new_socket;
+
         sem_post(&data.put_semaphore);
         sem_post(&data.occupied_semaphore);
     }
