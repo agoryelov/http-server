@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Make it rain the dogs</h1>
+
+    <script>
+    
+    for(let i = 0; i < 15; i++){
+        var x = document.createElement("IMG");
+        i >= 10 ? x.setAttribute("src", `./img/dogs/dog${i}.jpg`) : x.setAttribute("src", `./img/dogs/dog0${i}.jpg`);
+        x.setAttribute("width", "25%");
+        x.setAttribute("height", "auto");
+        x.setAttribute("alt", "Dog");
+        document.body.appendChild(x);
+    }
+
+
+    </script>
+</body>
+</html>
