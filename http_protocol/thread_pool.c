@@ -12,14 +12,15 @@ static void * process_thread_loop(void * arg){
         sem_wait(&data->occupied_semaphore);
         sem_wait(&data->get_semaphore);
         
-        ssize_t num_read;
-        
-        memset(request_buf, 0, CLIENT_READ_BUF); // You will regret removing this line
         int cfd = data->client_fd;
         
         sem_post(&data->get_semaphore);
         sem_post(&data->empty_semaphore);
         
+        ssize_t num_read;
+        
+        memset(request_buf, 0, CLIENT_READ_BUF); // You will regret removing this line
+
         num_read = read(cfd, request_buf, CLIENT_READ_BUF);
         
         http * my_http = http_create(NULL); //get config?
