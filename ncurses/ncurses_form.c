@@ -41,7 +41,7 @@ void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_entry_t *confi
     set_form_win(form, header);
     set_form_sub(form, sub);
     post_form(form);
-    print_center_horizontal_string(header, config->path, 2);
+    mvwprintw_center_justify(header, 2, config->path);
     box(header, 0, 0);
 }
 

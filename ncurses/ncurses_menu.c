@@ -99,7 +99,7 @@ void display_main_menu(MENU *menu, WINDOW *sub) {
 //
 //}
 
-void process_menu_input(MENU *menu, WINDOW *window_header, WINDOW *window_body) {
+void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
     int c;
     while ((c = getch()) != KEY_F(1)) {
         switch (c) {
@@ -114,11 +114,9 @@ void process_menu_input(MENU *menu, WINDOW *window_header, WINDOW *window_body) 
                 display_entry(current);
                 set_keyboard_menu();
                 unpost_menu(menu);
-                config_t lib_config;
 
-                create_main_menu(&menu, &lib_config);
+                create_main_menu(&menu, lib_config);
                 display_main_menu(menu, window_body);
-                config_destroy(&lib_config);
                 break;
             }
             default:

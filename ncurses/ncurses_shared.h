@@ -9,8 +9,7 @@ typedef struct config_entry {
     FIELDTYPE *field_type;
 } config_entry_t;
 
-void print_center_horizontal_strings(WINDOW *window, char **fmt, int fmt_count, int row);
-void print_center_horizontal_string(WINDOW *window, char *fmt, int row);
+void mvwprintw_center_justify(WINDOW *window, int row, char *fmt);
 
 /**
  * "Trims" the trailing whitespace of the char array

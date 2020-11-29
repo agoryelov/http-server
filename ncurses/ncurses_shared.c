@@ -22,14 +22,7 @@ void trim_trailing_whitespace(char *str) {
     *ptr = '\0';
 }
 
-void print_center_horizontal_strings(WINDOW *window, char **fmt, int fmt_count, int row) {
-    size_t midpoint_x = getmaxx(window) / 2;
-    for (int i = 0; i < fmt_count; ++i) {
-        mvwprintw(window, row + i, midpoint_x - strlen(fmt[i]) / 2, fmt[i]);
-    }
-}
-
-void print_center_horizontal_string(WINDOW *window, char *fmt, int row) {
+void mvwprintw_center_justify(WINDOW *window, int row, char *fmt) {
     size_t midpoint_x = getmaxx(window) / 2;
     mvwprintw(window, row, midpoint_x - strlen(fmt) / 2, fmt);
 }

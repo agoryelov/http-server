@@ -26,15 +26,15 @@ target_link_libraries(client dc)
 target_compile_options(client PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(settings_form STATIC ncurses/ncurses_form.c)
-target_link_libraries(settings_form form ncurses settings_menu)
+target_link_libraries(settings_form form ncurses settings_menu settings_shared)
 target_compile_options(settings_form PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(settings_menu STATIC ncurses/ncurses_menu.c)
-target_link_libraries(settings_menu menu ncurses settings_form)
+target_link_libraries(settings_menu menu ncurses settings_form settings_shared)
 target_compile_options(settings_menu PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(settings_panel STATIC ncurses/ncurses_panel.c)
-target_link_libraries(settings_panel panel ncurses)
+target_link_libraries(settings_panel panel ncurses settings_shared)
 target_compile_options(settings_panel PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(settings_shared STATIC ncurses/ncurses_shared.c)

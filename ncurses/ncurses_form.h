@@ -9,6 +9,9 @@
 #include "ncurses_panel.h"
 #include <stdlib.h>
 
+/**
+ * Sets keyboard to "form" mode.
+ */
 void set_keyboard_form();
 void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, WINDOW **sub);
 void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_entry_t *config);
