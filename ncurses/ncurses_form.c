@@ -7,6 +7,8 @@
 #include "ncurses_menu.h"
 #include <stdlib.h>
 
+#define MAX_PORT 65535
+
 void set_keyboard_form() {
     cbreak();
     noecho();
@@ -31,7 +33,7 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
         set_field_type(field[0], TYPE_ENUM, list, 0, 1);
     }
     if (((config_item_t*)item_userptr(item))->field_type == TYPE_INTEGER) {
-        set_field_type(field[0], TYPE_INTEGER, 0, 0, 65535);
+        set_field_type(field[0], TYPE_INTEGER, 0, 0, MAX_PORT);
     }
 
     *form = new_form(field);
