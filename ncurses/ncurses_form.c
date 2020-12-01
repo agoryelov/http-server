@@ -15,55 +15,44 @@ void set_keyboard_form() {
 }
 
 void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, WINDOW **sub) {
-    int height = 8;
+    int height = 12;
     int width = 40;
-    int start_y = 10;
+    int start_y = INSTRUCTIONS_HEIGHT + ASCII_TITLE_HEIGHT + MARGIN * 2;
     int start_x = (COLS - width) / 2;
     *header = derwin(stdscr, height, width, start_y, start_x);
     *sub = derwin(*header, height, width, 0, 0);
-    field[0] = new_field(1, width - 6, height / 2, 3, 0, 0);
+    field[0] = new_field(1, width - 12, 6, 6, 0, 0);
     field[1] = NULL;
 
     set_field_back(field[0], A_UNDERLINE);
     field_opts_off(field[0], O_STATIC);
-    if (((config_entry_t*)item_userptr(item))->field_type == TYPE_ENUM) {
+    if (((config_item_t*)item_userptr(item))->field_type == TYPE_ENUM) {
         char *list[3] = {"Processes", "Threads", NULL};
         set_field_type(field[0], TYPE_ENUM, list, 0, 1);
     }
-    if (((config_entry_t*)item_userptr(item))->field_type == TYPE_INTEGER) {
+    if (((config_item_t*)item_userptr(item))->field_type == TYPE_INTEGER) {
         set_field_type(field[0], TYPE_INTEGER, 0, 0, 65535);
     }
 
     *form = new_form(field);
 }
 
-void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_entry_t *config) {
+void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config) {
     set_form_win(form, header);
     set_form_sub(form, sub);
     post_form(form);
-    mvwprintw_center_justify(header, 2, config->path);
+    mvwprintw_center_justify(header, 2, config->name);
+    mvwprintw_center_justify(header, getmaxy(header) - 3, "[F1] Return     [Enter] Save");
     box(header, 0, 0);
 }
 
-void update_config_entry(config_entry_t *config_entry, char *value) {
-    config_t lib_config;
-    config_init(&lib_config);
-
-    if (!config_read_file(&lib_config, CONFIG_PATH)) {
-        printf("%s:%d - %s\n", config_error_file(&lib_config), config_error_line(&lib_config),
-               config_error_text(&lib_config));
-        config_destroy(&lib_config);
-        return;
-    }
-
-    config_setting_t *root = config_root_setting(&lib_config);
+void update_config_item(MENU *menu, ITEM *item, char *value, config_t *lib_config) {
+    config_item_t *config_entry = item_userptr(item);
+    config_setting_t *root = config_root_setting(lib_config);
     config_setting_t *setting = config_setting_get_member(root, config_entry->path);
-    if (!setting) {
-        setting = config_setting_add(root, config_entry->path, config_entry->type);
-    }
 
     trim_trailing_whitespace(value);
-    switch(config_entry->type) {
+    switch(config_entry->config_type) {
         case CONFIG_TYPE_STRING:
             config_setting_set_string(setting, value);
             break;
@@ -78,14 +67,12 @@ void update_config_entry(config_entry_t *config_entry, char *value) {
             break;
     }
 
-    if (!config_write_file(&lib_config, CONFIG_PATH)) {
+    if (!config_write_file(lib_config, CONFIG_PATH)) {
         printf("%s\n", "Could not write to file.");
     }
-
-    config_destroy(&lib_config);
 }
 
-void process_form_input(FORM *form, FIELD *field, ITEM *item) {
+void process_form_input(FORM *form, FIELD *field, ITEM *item, MENU *menu, config_t *lib_config) {
     int c;
     while((c = getch()) != KEY_F(1)) {
         switch(c) {
@@ -100,7 +87,7 @@ void process_form_input(FORM *form, FIELD *field, ITEM *item) {
                 break;
             case 10:    // ENTER KEY
                 if (form_driver(form, REQ_VALIDATION) != E_INVALID_FIELD) {
-                    update_config_entry(item_userptr(item), field_buffer(field, 0));
+                    update_config_item(menu, item, field_buffer(field, 0), lib_config);
                     return;
                 }
                 break;
@@ -111,7 +98,7 @@ void process_form_input(FORM *form, FIELD *field, ITEM *item) {
     }
 }
 
-void display_entry(ITEM *item)
+void display_item_form(MENU *menu, ITEM *item, config_t *lib_config)
 {
     // Declaration
     FIELD *field[2];
@@ -124,11 +111,13 @@ void display_entry(ITEM *item)
     display_form(form, header, sub, item_userptr(item));
 
     // Loop
-    process_form_input(form, field[0], item);
+    process_form_input(form, field[0], item, menu, lib_config);
 
     // Cleanup
     unpost_form(form);
     free_field(field[0]);
     free_field(field[1]);
     free_form(form);
+    delwin(sub);
+    delwin(header);
 }

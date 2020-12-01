@@ -2,6 +2,12 @@
 #include <curses.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+
+void mvwprintw_center_justify(WINDOW *window, int row, char *fmt) {
+    size_t midpoint_x = getmaxx(window) / 2;
+    mvwprintw(window, row, midpoint_x - strlen(fmt) / 2, fmt);
+}
 
 /**
  * "Trims" the trailing whitespace of the char array
@@ -22,7 +28,8 @@ void trim_trailing_whitespace(char *str) {
     *ptr = '\0';
 }
 
-void mvwprintw_center_justify(WINDOW *window, int row, char *fmt) {
-    size_t midpoint_x = getmaxx(window) / 2;
-    mvwprintw(window, row, midpoint_x - strlen(fmt) / 2, fmt);
+void convert_int_to_string(int num, char **buffer) {
+    int length = snprintf(NULL, 0, "%d", num);
+    *buffer = calloc(length + 1, sizeof(char));
+    sprintf(*buffer, "%d", num);
 }

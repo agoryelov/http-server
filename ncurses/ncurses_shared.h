@@ -3,11 +3,16 @@
 #define CONFIG_PATH "../config.cfg"
 #include <form.h>
 
-typedef struct config_entry {
-    int type;
+#define MARGIN 1
+#define ASCII_TITLE_HEIGHT 5
+#define INSTRUCTIONS_HEIGHT 1
+
+typedef struct config_item {
+    char *name;
     char *path;
+    int config_type;
     FIELDTYPE *field_type;
-} config_entry_t;
+} config_item_t;
 
 void mvwprintw_center_justify(WINDOW *window, int row, char *fmt);
 
@@ -18,5 +23,13 @@ void mvwprintw_center_justify(WINDOW *window, int row, char *fmt);
  * @param str - the char array to trim
  */
 void trim_trailing_whitespace(char *str);
+
+/**
+ * Converts the number to its string representation and
+ * sets the string in the buffer.
+ * @param num - the number to convert
+ * @param buffer - the buffer to store the string
+ */
+void convert_int_to_string(int num, char **buffer);
 
 #endif //NCURSES_SHARED_H

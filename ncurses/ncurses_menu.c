@@ -6,6 +6,8 @@
 #include "ncurses_form.h"
 #include "ncurses_shared.h"
 
+#define NUM_ITEMS 5
+
 void set_keyboard_menu(){
     cbreak();
     noecho();
@@ -13,12 +15,39 @@ void set_keyboard_menu(){
     curs_set(0);
 }
 
+config_item_t *create_config_item(char *name, char *path, int config_type, FIELDTYPE *field_type) {
+    config_item_t *config_item = calloc(1, sizeof(config_item_t));
+    config_item->name = name;
+    config_item->path = path;
+    config_item->config_type = config_type;
+    config_item->field_type = field_type;
+    return config_item;
+}
+
+config_item_t **create_config_items() {
+    config_item_t **config_items = calloc(NUM_ITEMS + 1, sizeof(config_item_t*));
+    config_items[0] = create_config_item("Mode:", "mode", CONFIG_TYPE_STRING, TYPE_ENUM);
+    config_items[1] = create_config_item("Port:", "port", CONFIG_TYPE_INT, TYPE_INTEGER);
+    config_items[2] = create_config_item("Root Directory:", "root_dir", CONFIG_TYPE_STRING, NULL);
+    config_items[3] = create_config_item("Index Page:", "index_page", CONFIG_TYPE_STRING, NULL);
+    config_items[4] = create_config_item("Not Found Page:", "not_found_page", CONFIG_TYPE_STRING, NULL);
+    config_items[5] = NULL;
+    return config_items;
+}
+
+void set_menu_item_userptrs(ITEM **items, config_item_t **config_items) {
+    size_t i;
+    for (i = 0; config_items[i] != NULL; ++i) {
+        set_item_userptr(items[i], config_items[i]);
+    }
+    set_item_userptr(items[i], config_items[i]);
+}
+
 void create_main_menu(MENU **menu, config_t *lib_config) {
     config_init(lib_config);
     if (!config_read_file(lib_config, CONFIG_PATH)) {
-        printf("%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config),
-               config_error_text(lib_config));
-        config_destroy(lib_config);
+        printf("%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config), config_error_text(lib_config));
+        return;
     }
     int port;
     const char *root_dir = NULL;
@@ -27,77 +56,36 @@ void create_main_menu(MENU **menu, config_t *lib_config) {
     const char *mode = NULL;
 
     int port_lookup_status = config_lookup_int(lib_config, "port", &port);
+    char *port_s = NULL;
+    if (port_lookup_status != CONFIG_FALSE) {
+        convert_int_to_string(port, &port_s);
+    }
     config_lookup_string(lib_config, "mode", &mode);
     config_lookup_string(lib_config, "root_dir", &root_dir);
     config_lookup_string(lib_config, "index_page", &index_page);
     config_lookup_string(lib_config, "not_found_page", &not_found_page);
 
-    // Conversion from int to char*
-    char *port_s = NULL;
-    if (port_lookup_status != CONFIG_FALSE) {
-        int length = snprintf(NULL, 0, "%d", port);
-        port_s = calloc(length + 1, sizeof(char));
-        sprintf(port_s, "%d", port);
-    }
-
-
-    config_entry_t *entry0 = malloc(sizeof(config_entry_t));
-    config_entry_t *entry1 = malloc(sizeof(config_entry_t));
-    config_entry_t *entry2 = malloc(sizeof(config_entry_t));
-    config_entry_t *entry3 = malloc(sizeof(config_entry_t));
-    config_entry_t *entry4 = malloc(sizeof(config_entry_t));
-
-    entry0->type = CONFIG_TYPE_STRING;
-    entry1->type = CONFIG_TYPE_INT;
-    entry2->type = CONFIG_TYPE_STRING;
-    entry3->type = CONFIG_TYPE_STRING;
-    entry4->type = CONFIG_TYPE_STRING;
-
-    entry0->field_type = TYPE_ENUM;
-    entry1->field_type = TYPE_INTEGER;
-    entry2->field_type = NULL;
-    entry3->field_type = NULL;
-    entry4->field_type = NULL;
-
-    entry0->path = "mode";
-    entry1->path = "port";
-    entry2->path = "root_dir";
-    entry3->path = "index_page";
-    entry4->path = "not_found_page";
+    config_item_t **config_items = create_config_items();
 
     ITEM **items = calloc(6, sizeof(ITEM *));
-    items[0] = new_item("Mode:", mode);
-    items[1] = new_item("Port:", port_s);
-    items[2] = new_item("Root Dir:", root_dir);
-    items[3] = new_item("Index Page:", index_page);
-    items[4] = new_item("Not Found Page:", not_found_page);
+    items[0] = new_item(config_items[0]->name, mode);
+    items[1] = new_item(config_items[1]->name, port_s);
+    items[2] = new_item(config_items[2]->name, root_dir);
+    items[3] = new_item(config_items[3]->name, index_page);
+    items[4] = new_item(config_items[4]->name, not_found_page);
     items[5] = NULL;
 
-    set_item_userptr(items[0], entry0);
-    set_item_userptr(items[1], entry1);
-    set_item_userptr(items[2], entry2);
-    set_item_userptr(items[3], entry3);
-    set_item_userptr(items[4], entry4);
-
+    set_menu_item_userptrs(items, config_items);
     *menu = new_menu(items);
 }
 
 void display_main_menu(MENU *menu, WINDOW *sub) {
     set_menu_mark(menu, " > ");
     set_menu_win(menu, stdscr);
-    sub = derwin(stdscr, LINES - 9 - 1, COLS - 2, 9, 1);
+    sub = sub == NULL ? derwin(stdscr, LINES - 11, COLS - 8, 10, 4) : sub;
     set_menu_sub(menu, sub);
     post_menu(menu);
-    box(stdscr, 0, 0);
 }
-
-//void update_main_menu(MENU *menu) {
-//
-//}
-//
-//void delete_main_menu(MENU *menu) {
-//
-//}
 
 void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
     int c;
@@ -111,10 +99,10 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
                 break;
             case 10: {   // ENTER KEY
                 ITEM *current = current_item(menu);
-                display_entry(current);
+                display_item_form(menu, current, lib_config);
                 set_keyboard_menu();
-                unpost_menu(menu);
 
+                unpost_menu(menu);
                 create_main_menu(&menu, lib_config);
                 display_main_menu(menu, window_body);
                 break;
@@ -123,4 +111,5 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
                 break;
         }
     }
+    delwin(window_body);
 }
