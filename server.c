@@ -1,54 +1,49 @@
-#include <dc/stdio.h>
-#include <dc/unistd.h>
-#include <dc/sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #include <fcntl.h>
+#include <signal.h>
+#include <sys/un.h>
+#include <sys/wait.h>
+#include <errno.h>
+
+#include "http_protocol/thread_pool.h"
+#include "http_protocol/process_pool.h"
 #include "shared.h"
 #include "http_protocol/http.h"
 
 #define BACKLOG 5
 
+static int create_server_fd();
+
 int main(void) {
+    int server_fd = create_server_fd();
+    http * my_http = http_create(NULL);
+    process_pool * p_pool = process_pool_create(my_http);
+    process_pool_start(p_pool);
+    for(;;) {
+        int client_fd = accept(server_fd, NULL, NULL);
+        process_pool_notify(p_pool, client_fd);
+    }
+    return EXIT_SUCCESS;
+}
+
+static int create_server_fd() {
     struct sockaddr_in addr;
     int sfd;
+    signal(SIGPIPE, SIG_IGN);
 
-    sfd = dc_socket(AF_INET, SOCK_STREAM, 0);
+    sfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    dc_bind(sfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
-    dc_listen(sfd, BACKLOG);
-    
-    for(;;)
-    {
-        int cfd;
-        ssize_t num_read;
-        char request_buf[BUF_SIZE];
-        memset(request_buf, 0, BUF_SIZE); // You will regret removing this line
-
-        cfd = dc_accept(sfd, NULL, NULL);
-        num_read = dc_read(cfd, request_buf, BUF_SIZE);
-
-        http * my_http = http_create(NULL);
-        http_request * request = my_http->parse_request(request_buf, num_read);
-        http_response * response = build_response(request);
-
-        send_response(response, cfd);
-        http_request_destroy(request);
-        http_response_destroy(response);
-        http_destroy(my_http);
-
-        dc_close(cfd);
-    }
-
-    // //dc_close(sfd); <- never reached because for(;;) never ends.
-
-    return EXIT_SUCCESS;
+    int optval = 1;
+    setsockopt(sfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+    bind(sfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+    listen(sfd, BACKLOG);
+    return sfd;
 }

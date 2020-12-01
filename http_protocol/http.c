@@ -6,7 +6,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <stdio.h>
+#include <dc/unistd.h>
 #include <unistd.h>
 
 #define CRLF "\r\n"
@@ -112,7 +112,6 @@ http_response * build_response(http_request * request) {
 void send_response(http_response * response, int cfd) {
     const char * version = "HTTP/1.0 ";
     write(cfd, version, strlen(version));
-
     const char * status_phrase = get_status_phrase(response->response_code);
     write(cfd, status_phrase, strlen(status_phrase));
     write(cfd, CRLF, 2);
@@ -268,4 +267,19 @@ static char * get_status_phrase(int status_code) {
     }
 
     return "500 Internal Server Error";
+}
+
+void http_handle_client(http * http_handler, int cfd) {
+    char request_buf[2048];
+    memset(request_buf, 0, 2048); // You will regret removing this line
+
+    ssize_t num_read = read(cfd, request_buf, 2048);
+
+    http_request * request = http_handler->parse_request(request_buf, num_read);
+    http_response * response = http_handler->build_response(request);
+
+    send_response(response, cfd);
+
+    http_request_destroy(request);
+    http_response_destroy(response);
 }
