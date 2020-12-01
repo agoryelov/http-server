@@ -268,3 +268,18 @@ static char * get_status_phrase(int status_code) {
 
     return "500 Internal Server Error";
 }
+
+void http_handle_client(http * http_handler, int cfd) {
+    char request_buf[2048];
+    memset(request_buf, 0, 2048); // You will regret removing this line
+
+    ssize_t num_read = read(cfd, request_buf, 2048);
+
+    http_request * request = http_handler->parse_request(request_buf, num_read);
+    http_response * response = http_handler->build_response(request);
+
+    send_response(response, cfd);
+
+    http_request_destroy(request);
+    http_response_destroy(response);
+}

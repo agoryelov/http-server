@@ -39,5 +39,6 @@ void send_response(http_response * response, int cfd);
 void http_destroy(http * http);
 void http_request_destroy(http_request * request);
 void http_response_destroy(http_response * response);
+void http_handle_client(http * http_handler, int cfd);
 
 #endif

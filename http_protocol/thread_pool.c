@@ -2,7 +2,7 @@
 
 #define CLIENT_READ_BUF 2048
 
-static void * process_thread_loop(void * arg){
+static void * thread_loop(void * arg){
     thread_pool *pool = arg;
     shared_data *data = pool->data;
 
@@ -25,7 +25,7 @@ static void * process_thread_loop(void * arg){
         
         http * my_http = http_create(NULL); //get config?
         http_request * request = my_http->parse_request(request_buf, num_read);
-        http_response * response = build_response(request);
+        http_response * response = my_http->build_response(request);
 
         send_response(response, cfd);
         
@@ -39,7 +39,7 @@ void thread_pool_start(thread_pool* pool){
     pool->is_running = true;
     for(int i = 0; i < NUM_THREADS; i++) {
         pthread_t thread;
-        pool->threads[i] = pthread_create(&thread, NULL, process_thread_loop, pool);   
+        pool->threads[i] = pthread_create(&thread, NULL, thread_loop, pool);   
     }
 }
 
