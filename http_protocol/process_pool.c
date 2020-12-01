@@ -48,9 +48,9 @@ static semaphores * create_semaphores() {
     sem_unlink(SEM_WORKER_READY);
     sem_unlink(SEM_WORKER_BINDED);
     sem_unlink(SEM_WAKE_WORKER);
-    sem->worker_ready = sem_open(SEM_WORKER_READY, O_CREAT, S_IRUSR|S_IWUSR, 0);
-    sem->worker_binded = sem_open(SEM_WORKER_BINDED, O_CREAT, S_IRUSR|S_IWUSR, 0);
-    sem->wake_worker = sem_open(SEM_WAKE_WORKER, O_CREAT, S_IRUSR|S_IWUSR, 0);
+    sem->worker_ready = sem_open(SEM_WORKER_READY, O_CREAT, DC_S_IRUSR|DC_S_IWUSR, 0);
+    sem->worker_binded = sem_open(SEM_WORKER_BINDED, O_CREAT, DC_S_IRUSR|DC_S_IWUSR, 0);
+    sem->wake_worker = sem_open(SEM_WAKE_WORKER, O_CREAT, DC_S_IRUSR|DC_S_IWUSR, 0);
     return sem;
 }
 
