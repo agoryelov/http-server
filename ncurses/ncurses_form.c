@@ -4,7 +4,7 @@
 #include <form.h>
 #include <curses.h>
 #include "ncurses_shared.h"
-#include "ncurses_panel.h"
+#include "ncurses_menu.h"
 #include <stdlib.h>
 
 void set_keyboard_form() {
@@ -38,6 +38,7 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
 }
 
 void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config) {
+    set_keyboard_form();
     set_form_win(form, header);
     set_form_sub(form, sub);
     post_form(form);
@@ -55,11 +56,7 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
     switch(config_item->config_type) {
         case CONFIG_TYPE_STRING:
             config_setting_set_string(setting, value);
-            //            ITEM **items = menu_items(menu);
-            //            int index = item_index(item);
-            //            items[index] = new_item(item_name(item), value);
-            //            unpost_menu(menu);
-            //            set_menu_items(menu, items);
+            update_main_menu(menu, item, value);
             break;
         case CONFIG_TYPE_INT: {
             int val = (int) strtoul(value, NULL, 0);
@@ -111,7 +108,6 @@ void display_item_form(MENU *menu, ITEM *item, config_t *lib_config)
     WINDOW *header, *sub;
 
     // Setup
-    set_keyboard_form();
     create_form(item, field, &form, &header, &sub);
     display_form(form, header, sub, item_userptr(item));
 

@@ -11,10 +11,9 @@
 #include "ncurses_panel.h"
 #include "ncurses_shared.h"
 
-static void print_ascii_art_title(WINDOW *window) {
+static void print_ascii_art_title() {
     int title_cols = 44;
-    int cols = getmaxx(window);
-    if (cols < title_cols) {
+    if (COLS < title_cols) {
         return; // return if not enough room to print
     }
     char *rows[ASCII_TITLE_HEIGHT] = {
@@ -24,22 +23,21 @@ static void print_ascii_art_title(WINDOW *window) {
         "_\\ \\//__   / /    / //\\/ /_/ /\\  / /_\\\\ _\\ \\\n",
         "\\__/\\__/   \\/     \\/ \\____/\\_\\ \\/\\____/ \\__/ \n"
     };
-    int midpoint_x = cols / 2;
+    int midpoint_x = COLS / 2;
     int start_row = MARGIN;
     for (int i = 0; i < ASCII_TITLE_HEIGHT; ++i) {
-        mvwprintw(window, start_row + i, midpoint_x - title_cols / 2, rows[i]);
+        mvwprintw(stdscr, start_row + i, midpoint_x - title_cols / 2, rows[i]);
     }
 }
 
-static void print_instructions(WINDOW *window) {
+static void print_instructions() {
     int instruction_cols = 63;
-    int cols = getmaxx(window);
-    if (cols < instruction_cols) {
+    if (COLS < instruction_cols) {
         return; // return if not enough room to print
     }
     char *text = "[F1] Exit    [^] Scroll Up    [v] Scroll Down    [Enter] Select";
-    int midpoint_x = cols / 2;
-    mvwprintw(window, MARGIN * 2 + ASCII_TITLE_HEIGHT, midpoint_x - instruction_cols / 2, text);
+    int midpoint_x = COLS / 2;
+    mvwprintw(stdscr, MARGIN * 2 + ASCII_TITLE_HEIGHT, midpoint_x - instruction_cols / 2, text);
 }
 
 int main() {
@@ -51,9 +49,8 @@ int main() {
     // Setup
     initscr();
     refresh();
-    set_keyboard_menu();
-    print_ascii_art_title(stdscr);
-    print_instructions(stdscr);
+    print_ascii_art_title();
+    print_instructions();
     create_main_menu(&main_menu, &lib_config);
     display_main_menu(main_menu, main_menu_window);
     box(stdscr, 0, 0);

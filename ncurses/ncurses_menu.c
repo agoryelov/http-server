@@ -80,11 +80,22 @@ void create_main_menu(MENU **menu, config_t *lib_config) {
 }
 
 void display_main_menu(MENU *menu, WINDOW *sub) {
+    set_keyboard_menu();
     set_menu_mark(menu, " > ");
     set_menu_win(menu, stdscr);
     sub = sub == NULL ? derwin(stdscr, LINES - 11, COLS - 8, 10, 4) : sub;
     set_menu_sub(menu, sub);
     post_menu(menu);
+}
+
+void update_main_menu(MENU *menu, ITEM *item, char *value) {
+    ITEM **items = menu_items(menu);
+    config_item_t **config_items = create_config_items();
+    int index = item_index(item);
+    items[index] = new_item(item_name(item), value);
+    set_menu_item_userptrs(items, config_items);
+    unpost_menu(menu);
+    set_menu_items(menu, items);
 }
 
 void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
@@ -100,10 +111,6 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
             case 10: {   // ENTER KEY
                 ITEM *current = current_item(menu);
                 display_item_form(menu, current, lib_config);
-                set_keyboard_menu();
-
-                unpost_menu(menu);
-                create_main_menu(&menu, lib_config);
                 display_main_menu(menu, window_body);
                 break;
             }
