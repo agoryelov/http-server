@@ -9,67 +9,67 @@
 #include <unistd.h>
 
 #define CRLF "\r\n"
-#define CRLF_CRLF "\r\n\r\n"
 
+#define MAX_REQUEST_LEN 2048
 
-
+static void parse_request_header(char * raw_header, http_request * request);
 static int parse_request_method(char * method);
 static char * substring(const char * string, size_t start, size_t end);
-static int parse_uri_to_filepath(char * request_uri, char ** request_path);
+static int parse_uri_to_filepath(config * conf, char * request_uri, char ** request_path);
 static char * get_status_phrase(int status_code);
-static char * get_local_time();
+static char * get_utc_time();
+
+void http_handle_client(http * http_handler, int cfd) {
+    char request_buf[MAX_REQUEST_LEN];
+    memset(request_buf, 0, MAX_REQUEST_LEN); // You will regret removing this line
+    
+    ssize_t num_read = read(cfd, request_buf, MAX_REQUEST_LEN);
+
+    http_request * request = parse_request(request_buf, num_read);
+    http_response * response = build_response(http_handler, request);
+    send_response(response, cfd);
+
+    http_request_destroy(request);
+    http_response_destroy(response);
+}
+
+http * http_create(config * http_config) {
+    http * new_http = malloc(sizeof(http));
+
+    new_http->my_config = http_config;
+    new_http->parse_request = parse_request;
+    new_http->send_response = send_response;
+    new_http->build_response = build_response;
+
+    return new_http;
+}
 
 http_request * parse_request(char * request_text, size_t request_len) {
     char * end_of_header = strstr(request_text, "\r\n\r\n");
-    if (end_of_header == NULL) {
-        return NULL;
-    }
+    if (end_of_header == NULL) end_of_header = strstr(request_text, "\n\n");
+    if (end_of_header == NULL) return NULL;
 
     char * end_of_request_line = strstr(request_text, "\r\n");
-    if (end_of_request_line == NULL) {
-        return NULL;
-    }
+    if (end_of_request_line == NULL) end_of_request_line = strstr(request_text, "\n");
+    if (end_of_request_line == NULL) return NULL;
     
-    // Parsing according to example at: https://linux.die.net/man/3/strtok_r
-    // It aint pretty but it works ¯\_(ツ)_/¯
-
+    
     char * request_body = strdup(end_of_header);
     int request_body_len = strlen(end_of_header);
 
     char * request_header = substring(request_text, 0, request_len - request_body_len);
-    char * saveptr1, * saveptr2, * saveptr3;
-    char * request_line = strtok_r(request_header, "\r\n", &saveptr1);
-    
-    char * method_str = strtok_r(request_line, " ", &saveptr2);
-    char * uri_str = strtok_r(NULL, " ", &saveptr2);
-    char * version_str = strtok_r(NULL, " ", &saveptr2);
-
-    str_map * fields_map = sm_create(4);
-    char * header_field = strtok_r(NULL, "\r\n", &saveptr1);
-    while (header_field != NULL) {
-        char * lhs = strtok_r(header_field, ":", &saveptr3);
-        char * rhs = strtok_r(NULL, ":", &saveptr3);
-        sm_put(fields_map, lhs, rhs);
-        header_field = strtok_r(NULL, "\r\n", &saveptr1);
-    }
-
     http_request * request = malloc(sizeof(http_request));
-    
-    request->method = parse_request_method(method_str);
-    request->request_uri = strdup(uri_str);
-    request->http_version = strdup(version_str);
+    parse_request_header(request_header, request);
     request->request_body = request_body;
-    request->header_fields = fields_map;
-
     free(request_header);
 
     return request;
 }
 
-http_response * build_response(http_request * request) {
-    
+http_response * build_response(http * http_handler, http_request * request) {
     str_map * header_fields = sm_create(4);
     sm_put(header_fields, "Server", "DataComm/0.1");
+    sm_put(header_fields, "Date", get_utc_time());
 
     http_response * response = malloc(sizeof(http_response));
     response->header_fields = header_fields;
@@ -80,7 +80,7 @@ http_response * build_response(http_request * request) {
     }
 
     response->method = request->method;
-    int path_status = parse_uri_to_filepath(request->request_uri, &response->request_path);
+    int path_status = parse_uri_to_filepath(http_handler->my_config, request->request_uri, &response->request_path);
 
     if (path_status == -1) {
         response->response_code = 500;
@@ -144,16 +144,6 @@ void send_response(http_response * response, int cfd) {
     close(content_fd);
 }
 
-http * http_create(config * http_config) {
-    http * new_http = malloc(sizeof(http));
-
-    new_http->my_config = http_config;
-    new_http->parse_request = parse_request;
-    new_http->send_response = send_response;
-    new_http->build_response = build_response;
-
-    return new_http;
-}
 
 void http_request_destroy(http_request * request) {
     if (request == NULL) return;
@@ -175,59 +165,6 @@ void http_response_destroy(http_response * response) {
 
 void http_destroy(http * http) {
     free(http);
-}
-
-// Returns 1 if able to open request_uri
-// Returns 0 if can't open request_uri but can open not found page
-// Returns -1 if can't open either (Server Error)
-static int parse_uri_to_filepath(char * request_uri, char ** request_path) {
-    if (request_uri == NULL) {
-        return -1;
-    }
-
-    // TODO: Get these from settings
-    char * serving_directory = "../server_directory";
-    char * not_found_page = "/404.html";
-    char * index_page = "/index.html";
-
-    const int max_path = 2000;
-
-    if (strcmp(request_uri, "/") == 0) {
-        request_uri = index_page;
-    }
-
-    char filepath_buf[max_path];
-    memset(filepath_buf, 0, max_path);
-    sprintf(filepath_buf, "%s%s", serving_directory, request_uri);
-
-    if( access( filepath_buf, F_OK ) != -1 ) {
-        size_t filepath_len = strlen(filepath_buf);
-        *request_path = malloc(filepath_len + 1);
-        strcpy(*request_path, filepath_buf);
-        return 1;
-    }
-
-    memset(filepath_buf, 0, max_path);
-    sprintf(filepath_buf, "%s%s", serving_directory, not_found_page);
-
-    if( access( filepath_buf, F_OK ) != -1 ) {
-        size_t filepath_len = strlen(filepath_buf);
-        *request_path = malloc(filepath_len + 1);
-        strcpy(*request_path, filepath_buf);
-        return 0;
-    }
-
-    return -1;
-}
-
-static char * get_local_time() {
-    time_t raw;
-    struct tm *local;
-
-    time(&raw);
-    local = localtime(&raw);
-
-    return asctime(local);
 }
 
 static char * substring(const char * string, size_t start, size_t end) {
@@ -268,17 +205,81 @@ static char * get_status_phrase(int status_code) {
     return "500 Internal Server Error";
 }
 
-void http_handle_client(http * http_handler, int cfd) {
-    char request_buf[2048];
-    memset(request_buf, 0, 2048); // You will regret removing this line
+static char * get_utc_time() {
+    time_t raw;
+    struct tm *utc;
 
-    ssize_t num_read = read(cfd, request_buf, 2048);
+    time(&raw);
+    utc = gmtime(&raw);
 
-    http_request * request = http_handler->parse_request(request_buf, num_read);
-    http_response * response = http_handler->build_response(request);
+    char * timetext = asctime(utc);
+    timetext[24] = '\0';
+    return timetext;
+}
 
-    send_response(response, cfd);
+// Parsing according to example at: https://linux.die.net/man/3/strtok_r
+static void parse_request_header(char * raw_header, http_request * request) {
+    char * saveptr1, * saveptr2, * saveptr3;
+    char * request_line = strtok_r(raw_header, "\r\n", &saveptr1);
+    
+    char * method_str = strtok_r(request_line, " ", &saveptr2);
+    char * uri_str = strtok_r(NULL, " ", &saveptr2);
+    char * version_str = strtok_r(NULL, " ", &saveptr2);
 
-    http_request_destroy(request);
-    http_response_destroy(response);
+    str_map * fields_map = sm_create(4);
+    char * header_field = strtok_r(NULL, "\r\n", &saveptr1);
+    while (header_field != NULL) {
+        char * lhs = strtok_r(header_field, ":", &saveptr3);
+        char * rhs = strtok_r(NULL, ":", &saveptr3);
+        sm_put(fields_map, lhs, rhs);
+        header_field = strtok_r(NULL, "\r\n", &saveptr1);
+    }
+
+    request->method = parse_request_method(method_str);
+    request->http_version = strdup(version_str);
+    request->request_uri = strdup(uri_str);
+    request->header_fields = fields_map;
+}
+
+// Returns 1 if able to open request_uri
+// Returns 0 if can't open request_uri but can open not found page
+// Returns -1 if can't open either (Server Error)
+static int parse_uri_to_filepath(config * conf, char * request_uri, char ** request_path) {
+    if (request_uri == NULL) {
+        return -1;
+    }
+
+    // TODO: Get these from settings
+    char * serving_directory = conf->root_dir;
+    char * not_found_page = conf->not_found_page;
+    char * index_page = conf->index_page;
+
+    const int max_path = 2000;
+
+    if (strcmp(request_uri, "/") == 0) {
+        request_uri = index_page;
+    }
+
+    char filepath_buf[max_path];
+    memset(filepath_buf, 0, max_path);
+    sprintf(filepath_buf, "%s%s", serving_directory, request_uri);
+
+    if( access( filepath_buf, F_OK ) != -1 ) {
+        size_t filepath_len = strlen(filepath_buf);
+        *request_path = malloc(filepath_len + 1);
+        strcpy(*request_path, filepath_buf);
+        return 1;
+    }
+
+    memset(filepath_buf, 0, max_path);
+    sprintf(filepath_buf, "%s%s", serving_directory, not_found_page);
+
+    if( access( filepath_buf, F_OK ) != -1 ) {
+        size_t filepath_len = strlen(filepath_buf);
+        *request_path = malloc(filepath_len + 1);
+        strcpy(*request_path, filepath_buf);
+        return 0;
+    }
+
+    return -1;
 }

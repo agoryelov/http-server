@@ -25,16 +25,17 @@ typedef struct  {
     char * request_body;
 } http_request;
 
-typedef struct {
+typedef struct http http;
+struct http {
     http_request * (*parse_request)(char *, size_t);
-    http_response * (*build_response)(http_request *);
+    http_response * (*build_response)(http *, http_request *);
     void (*send_response)(http_response *, int);
     config * my_config;
-} http;
+};
 
 http * http_create(config * http_config);
 http_request * parse_request(char * request_text, size_t request_len);
-http_response * build_response(http_request * request);
+http_response * build_response(http * http_handler, http_request * request);
 void send_response(http_response * response, int cfd);
 void http_destroy(http * http);
 void http_request_destroy(http_request * request);

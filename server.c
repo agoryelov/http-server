@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     int server_fd = create_server_fd();
     for(;;){
         config * conf = get_config(argc, argv);
-        http * my_http = http_create(NULL);
+        http * my_http = http_create(conf);
         process_pool * p_pool;
         thread_pool * t_pool;
 

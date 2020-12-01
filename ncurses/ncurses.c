@@ -66,5 +66,4 @@ int main() {
     delete_main_menu(main_menu);
     delwin(main_menu_window);
     endwin();
-    exit_curses(0);
 }
