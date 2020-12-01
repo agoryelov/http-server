@@ -10,7 +10,7 @@ typedef struct {
     char *root_dir;
     char *index_page;
     char *not_found_page;
-    char *mode;
+    char mode;
     int port;
 } config;
 
