@@ -6,8 +6,6 @@
 #include "ncurses_form.h"
 #include "ncurses_shared.h"
 
-#define NUM_ITEMS 5
-
 void set_keyboard_menu(){
     cbreak();
     noecho();

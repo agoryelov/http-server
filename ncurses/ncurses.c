@@ -44,7 +44,7 @@ int main() {
     // Declaration
     MENU *main_menu = NULL;
     WINDOW *main_menu_window = NULL;
-    config_item_t **config_items = calloc(6, sizeof(config_item_t*));
+    config_item_t **config_items = calloc(NUM_ITEMS + 1, sizeof(config_item_t*));
     config_t lib_config;
 
     // Setup
