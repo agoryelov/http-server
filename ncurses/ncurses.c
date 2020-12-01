@@ -44,6 +44,7 @@ int main() {
     // Declaration
     MENU *main_menu = NULL;
     WINDOW *main_menu_window = NULL;
+    config_item_t **config_items = calloc(6, sizeof(config_item_t*));
     config_t lib_config;
 
     // Setup
@@ -51,7 +52,7 @@ int main() {
     refresh();
     print_ascii_art_title();
     print_instructions();
-    create_main_menu(&main_menu, &lib_config);
+    create_main_menu(&main_menu, &lib_config, config_items);
     display_main_menu(main_menu, main_menu_window);
     box(stdscr, 0, 0);
 
@@ -59,11 +60,11 @@ int main() {
     process_menu_input(main_menu, &lib_config, main_menu_window);
 
     // Cleanup
+    delete_config_items(config_items);
     config_destroy(&lib_config);
     unpost_menu(main_menu);
-    free_menu(main_menu);
+    delete_main_menu(main_menu);
     delwin(main_menu_window);
-
     endwin();
     exit_curses(0);
 }
