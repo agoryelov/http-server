@@ -3,6 +3,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "config.h"
 
 #define CONFIG_PATH "../config.cfg"
@@ -28,7 +29,6 @@ void destroy_config(config *cfg) {
     free(cfg->root_dir);
     free(cfg->not_found_page);
     free(cfg->index_page);
-    free(cfg->mode);
     free(cfg);
 }
 
@@ -36,7 +36,7 @@ void set_default_config(config *cfg) {
     cfg->root_dir = strdup("../server_directory");
     cfg->index_page = strdup("/index.html");
     cfg->not_found_page = strdup("/404.html");
-    cfg->mode = strdup("processes");
+    cfg->mode = 't';
     cfg->port = 80;
 }
 
@@ -59,8 +59,7 @@ void set_file_config(config *cfg) {
 
     const char *root_dir, *index_page, *not_found_page, *mode;
     if (config_lookup_string(&lib_config, "mode", &mode) != CONFIG_FALSE) {
-        free(cfg->mode);
-        cfg->mode = strdup(mode);
+        cfg->mode = tolower(mode[0]);
     }
     if (config_lookup_string(&lib_config, "root_dir", &root_dir) != CONFIG_FALSE) {
         free(cfg->root_dir);
@@ -92,8 +91,7 @@ void set_env_config(config *cfg) {
         }
     }
     if ((env_var = getenv("DC_HTTP_MODE")) != NULL) {
-        free(cfg->mode);
-        cfg->mode = strdup(env_var);
+        cfg->mode = tolower(env_var[0]);
     }
     if ((env_var = getenv("DC_HTTP_ROOT_DIR")) != NULL) {
         free(cfg->root_dir);
@@ -143,8 +141,7 @@ void set_cmd_line_config(config *cfg, int argc, char **argv) {
                 break;
             }
             case 'm':
-                free(cfg->mode);
-                cfg->mode = strdup(optarg);
+                cfg->mode = tolower(optarg[0]);
                 break;
             case 'r':
                 free(cfg->root_dir);
