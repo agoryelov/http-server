@@ -41,5 +41,5 @@ add_library(settings_shared STATIC ncurses/ncurses_shared.c)
 target_compile_options(settings_shared PRIVATE -Wpedantic -Wall -Wextra)
 
 add_executable(settings ncurses/ncurses.c)
-target_link_libraries(settings form menu panel ncurses config http_config settings_form settings_menu settings_panel settings_shared)
+target_link_libraries(settings form menu panel ncurses config settings_form settings_menu settings_panel settings_shared)
 target_compile_options(settings PRIVATE -Wpedantic -Wall -Wextra)

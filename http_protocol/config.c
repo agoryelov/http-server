@@ -62,15 +62,15 @@ void set_file_config(config *cfg) {
         free(cfg->mode);
         cfg->mode = strdup(mode);
     }
-    if (config_lookup_string(&lib_config, "directories.root", &root_dir) != CONFIG_FALSE) {
+    if (config_lookup_string(&lib_config, "root_dir", &root_dir) != CONFIG_FALSE) {
         free(cfg->root_dir);
         cfg->root_dir = strdup(root_dir);
     }
-    if (config_lookup_string(&lib_config, "pages.index", &index_page) != CONFIG_FALSE) {
+    if (config_lookup_string(&lib_config, "index_page", &index_page) != CONFIG_FALSE) {
         free(cfg->index_page);
         cfg->index_page = strdup(index_page);
     }
-    if (config_lookup_string(&lib_config, "pages.not_found", &not_found_page) != CONFIG_FALSE) {
+    if (config_lookup_string(&lib_config, "not_found_page", &not_found_page) != CONFIG_FALSE) {
         free(cfg->not_found_page);
         cfg->not_found_page = strdup(not_found_page);
     }
