@@ -94,7 +94,9 @@ void process_form_input(FORM *form, FIELD *field, ITEM *item, MENU *menu, config
             case KEY_RIGHT:
                 form_driver(form, REQ_RIGHT_CHAR);
                 break;
-            case 127:   // BACKSPACE
+            case 127:   // Terminals may have different backspace keys
+            case KEY_BACKSPACE:
+            case 330:
                 form_driver(form, REQ_DEL_PREV);
                 break;
             case 10:    // ENTER KEY
