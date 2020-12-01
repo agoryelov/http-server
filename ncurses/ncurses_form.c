@@ -62,6 +62,7 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
             int val = (int) strtoul(value, NULL, 0);
             if (val < 0) return;
             config_setting_set_int(setting, val);
+            update_main_menu(menu, item, value);
             break;
         }
         default:
