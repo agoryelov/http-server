@@ -46,15 +46,20 @@ void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config
     box(header, 0, 0);
 }
 
-void update_config_item(MENU *menu, ITEM *item, char *value, config_t *lib_config) {
-    config_item_t *config_entry = item_userptr(item);
+void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_config) {
+    config_item_t *config_item = item_userptr(item);
     config_setting_t *root = config_root_setting(lib_config);
-    config_setting_t *setting = config_setting_get_member(root, config_entry->path);
+    config_setting_t *setting = config_setting_get_member(root, config_item->path);
 
     trim_trailing_whitespace(value);
-    switch(config_entry->config_type) {
+    switch(config_item->config_type) {
         case CONFIG_TYPE_STRING:
             config_setting_set_string(setting, value);
+            //            ITEM **items = menu_items(menu);
+            //            int index = item_index(item);
+            //            items[index] = new_item(item_name(item), value);
+            //            unpost_menu(menu);
+            //            set_menu_items(menu, items);
             break;
         case CONFIG_TYPE_INT: {
             int val = (int) strtoul(value, NULL, 0);
@@ -87,7 +92,7 @@ void process_form_input(FORM *form, FIELD *field, ITEM *item, MENU *menu, config
                 break;
             case 10:    // ENTER KEY
                 if (form_driver(form, REQ_VALIDATION) != E_INVALID_FIELD) {
-                    update_config_item(menu, item, field_buffer(field, 0), lib_config);
+                    save_to_lib_config(menu, item, field_buffer(field, 0), lib_config);
                     return;
                 }
                 break;

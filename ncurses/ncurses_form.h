@@ -15,7 +15,7 @@
 void set_keyboard_form();
 void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, WINDOW **sub);
 void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config);
-void update_config_item(MENU *menu, ITEM *item, char *value, config_t *lib_config);
+void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_config);
 void process_form_input(FORM *form, FIELD *field, ITEM *item, MENU *menu, config_t *lib_config);
 void display_item_form(MENU *menu, ITEM *item, config_t *lib_config);
 
