@@ -18,7 +18,7 @@ target_link_libraries(process_pool http)
 target_compile_options(process_pool PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(http STATIC ./http_protocol/http.c)
-target_link_libraries(http str_map dc)
+target_link_libraries(http str_map)
 target_compile_options(http PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(http_config STATIC ./http_protocol/config.c)
@@ -26,12 +26,9 @@ target_link_libraries(http_config config)
 target_compile_options(http_config PRIVATE -Wpedantic -Wall -Wextra)
 
 add_executable(server server.c)
-target_link_libraries(server dc http http_config str_map pthread thread_pool process_pool rt)
+target_link_libraries(server http http_config str_map pthread thread_pool process_pool rt)
 target_compile_options(server PRIVATE -Wpedantic -Wall -Wextra)
 
-add_executable(client client.c)
-target_link_libraries(client dc)
-target_compile_options(client PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(settings_form STATIC ncurses/ncurses_form.c)
 target_link_libraries(settings_form form ncurses settings_menu settings_shared)
