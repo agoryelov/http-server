@@ -4,6 +4,7 @@
 #include <curses.h>
 #include "ncurses_shared.h"
 
+// TODO: Remove file if unneeded
 void display_existing_panel(PANEL *panel);
 
 PANEL *display_new_panel(WINDOW *window);
