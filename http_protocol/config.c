@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include "config.h"
 
 #define CONFIG_PATH "../config.cfg"
@@ -16,12 +17,15 @@ void set_env_config(config *cfg);
 
 void set_cmd_line_config(config *cfg, int argc, char **argv);
 
+void validate_config(config *cfg);
+
 config *get_config(int argc, char **argv) {
     config *cfg = malloc(sizeof(config));
     set_default_config(cfg);
     set_file_config(cfg);
     set_env_config(cfg);
     set_cmd_line_config(cfg, argc, argv);
+    validate_config(cfg);
     return cfg;
 }
 
@@ -30,6 +34,14 @@ void destroy_config(config *cfg) {
     free(cfg->not_found_page);
     free(cfg->index_page);
     free(cfg);
+}
+
+void validate_config(config *cfg) {
+    struct stat s;
+    if (stat(cfg->root_dir, &s) != 0 || !S_ISDIR(s.st_mode)) {
+        fprintf(stderr, "Root directory '%s' does not exist.\n", cfg->root_dir);
+        exit(EXIT_FAILURE);
+    }
 }
 
 void set_default_config(config *cfg) {
