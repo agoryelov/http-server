@@ -15,27 +15,22 @@ void set_keyboard_menu(){
     curs_set(0);
 }
 
-config_item_t *create_config_item(char *name, char *path, int config_type, FIELDTYPE *field_type) {
-    config_item_t *config_item = calloc(1, sizeof(config_item_t));
-    config_item->name = name;
-    config_item->path = path;
-    config_item->config_type = config_type;
-    config_item->field_type = field_type;
-    return config_item;
+void create_config_item(config_item_t **config_items, int index, char *name, char *path, int config_type, FIELDTYPE *field_type) {
+    config_items[index] = calloc(1, sizeof(config_item_t));
+    config_items[index]->name = name;
+    config_items[index]->path = path;
+    config_items[index]->config_type = config_type;
+    config_items[index]->field_type = field_type;
 }
 
-config_item_t **create_config_items() {
-    config_item_t **config_items = calloc(NUM_ITEMS + 1, sizeof(config_item_t*));
-    config_items[0] = create_config_item("Mode:", "mode", CONFIG_TYPE_STRING, TYPE_ENUM);
-    config_items[1] = create_config_item("Port:", "port", CONFIG_TYPE_INT, TYPE_INTEGER);
-    config_items[2] = create_config_item("Root Directory:", "root_dir", CONFIG_TYPE_STRING, NULL);
-    config_items[3] = create_config_item("Index Page:", "index_page", CONFIG_TYPE_STRING, NULL);
-    config_items[4] = create_config_item("Not Found Page:", "not_found_page", CONFIG_TYPE_STRING, NULL);
-    config_items[5] = NULL;
-    return config_items;
+void delete_config_items(config_item_t **config_items) {
+    for (size_t i = 0; config_items[i] != NULL; ++i) {
+        free(config_items[i]);
+    }
+    free(config_items);
 }
 
-void set_menu_item_userptrs(ITEM **items, config_item_t **config_items) {
+void set_item_userptrs(ITEM **items, config_item_t **config_items) {
     size_t i;
     for (i = 0; config_items[i] != NULL; ++i) {
         set_item_userptr(items[i], config_items[i]);
@@ -43,7 +38,7 @@ void set_menu_item_userptrs(ITEM **items, config_item_t **config_items) {
     set_item_userptr(items[i], config_items[i]);
 }
 
-void create_main_menu(MENU **menu, config_t *lib_config) {
+void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items) {
     config_init(lib_config);
     if (!config_read_file(lib_config, CONFIG_PATH)) {
         printf("%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config), config_error_text(lib_config));
@@ -65,9 +60,14 @@ void create_main_menu(MENU **menu, config_t *lib_config) {
     config_lookup_string(lib_config, "index_page", &index_page);
     config_lookup_string(lib_config, "not_found_page", &not_found_page);
 
-    config_item_t **config_items = create_config_items();
+    create_config_item(config_items, 0, "Mode:", "mode", CONFIG_TYPE_STRING, TYPE_ENUM);
+    create_config_item(config_items, 1, "Port:", "port", CONFIG_TYPE_INT, TYPE_INTEGER);
+    create_config_item(config_items, 2, "Root Directory:", "root_dir", CONFIG_TYPE_STRING, NULL);
+    create_config_item(config_items, 3, "Index Page:", "index_page", CONFIG_TYPE_STRING, NULL);
+    create_config_item(config_items, 4, "Not Found Page:", "not_found_page", CONFIG_TYPE_STRING, NULL);
+    config_items[5] = NULL;
 
-    ITEM **items = calloc(6, sizeof(ITEM *));
+    ITEM **items = calloc(NUM_ITEMS + 1, sizeof(ITEM *));
     items[0] = new_item(config_items[0]->name, mode);
     items[1] = new_item(config_items[1]->name, port_s);
     items[2] = new_item(config_items[2]->name, root_dir);
@@ -75,7 +75,7 @@ void create_main_menu(MENU **menu, config_t *lib_config) {
     items[4] = new_item(config_items[4]->name, not_found_page);
     items[5] = NULL;
 
-    set_menu_item_userptrs(items, config_items);
+    set_item_userptrs(items, config_items);
     *menu = new_menu(items);
 }
 
@@ -89,13 +89,22 @@ void display_main_menu(MENU *menu, WINDOW *sub) {
 }
 
 void update_main_menu(MENU *menu, ITEM *item, char *value) {
-    ITEM **items = menu_items(menu);
-    config_item_t **config_items = create_config_items();
     int index = item_index(item);
+    ITEM **items = menu_items(menu);
+    config_item_t *config_item = item_userptr(item);
     items[index] = new_item(item_name(item), value);
-    set_menu_item_userptrs(items, config_items);
+    set_item_userptr(items[index], config_item);
+    free(item);
     unpost_menu(menu);
     set_menu_items(menu, items);
+}
+
+void delete_main_menu(MENU *menu) {
+    ITEM **items = menu_items(menu);
+    for (size_t i = 0; items[i] != NULL; ++i) {
+        free_item(items[i]);
+    }
+    free_menu(menu);
 }
 
 void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
@@ -110,7 +119,7 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
                 break;
             case 10: {   // ENTER KEY
                 ITEM *current = current_item(menu);
-                display_item_form(menu, current, lib_config);
+                init_item_form(menu, current, lib_config);
                 display_main_menu(menu, window_body);
                 break;
             }
@@ -118,5 +127,4 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
                 break;
         }
     }
-    delwin(window_body);
 }

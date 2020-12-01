@@ -101,7 +101,7 @@ void process_form_input(FORM *form, FIELD *field, ITEM *item, MENU *menu, config
     }
 }
 
-void display_item_form(MENU *menu, ITEM *item, config_t *lib_config)
+void init_item_form(MENU *menu, ITEM *item, config_t *lib_config)
 {
     // Declaration
     FIELD *field[2];
