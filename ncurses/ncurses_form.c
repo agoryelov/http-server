@@ -53,6 +53,10 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
     config_item_t *config_item = item_userptr(item);
     config_setting_t *root = config_root_setting(lib_config);
     config_setting_t *setting = config_setting_get_member(root, config_item->path);
+    if (setting && config_setting_type(setting) != config_item->config_type) {
+        config_setting_remove(root, config_item->path);
+        setting = NULL;
+    }
     if (!setting) {
         setting = config_setting_add(root, config_item->path, config_item->config_type);
     }
