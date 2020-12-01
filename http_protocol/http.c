@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <dc/unistd.h>
 #include <unistd.h>
 
 #define CRLF "\r\n"
