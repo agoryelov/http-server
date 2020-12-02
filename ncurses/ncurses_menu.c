@@ -46,7 +46,6 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
     if (port_lookup_status != CONFIG_FALSE) {
         convert_int_to_string(port, &port_s);
     }
-
     config_lookup_string(lib_config, "mode", &mode);
     config_lookup_string(lib_config, "root_dir", &root_dir);
     config_lookup_string(lib_config, "index_page", &index_page);
@@ -75,7 +74,7 @@ void display_main_menu(MENU *menu, WINDOW *sub) {
     set_keyboard_menu();
     set_menu_mark(menu, " > ");
     set_menu_win(menu, stdscr);
-    sub = sub == NULL ? derwin(stdscr, LINES - 11, COLS - 8, 10, 4) : sub;
+    sub = derwin(stdscr, LINES - 11, COLS - 8, 10, 4);
     set_menu_sub(menu, sub);
     post_menu(menu);
 }

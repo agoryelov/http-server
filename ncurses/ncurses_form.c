@@ -30,7 +30,7 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
         char *list[3] = {"Processes", "Threads", NULL};
         set_field_type(field[0], TYPE_ENUM, list, 0, 1);
     }
-    if (((config_item_t*)item_userptr(item))->field_type == TYPE_INTEGER) {
+    else if (((config_item_t*)item_userptr(item))->field_type == TYPE_INTEGER) {
         set_field_type(field[0], TYPE_INTEGER, 0, 0, MAX_PORT);
     }
 
