@@ -1,12 +1,11 @@
 #include "thread_pool.h"
 
-#define CLIENT_READ_BUF 2048
+
 
 static void * thread_loop(void * arg){
     thread_pool *pool = arg;
     shared_data *data = pool->data;
 
-    char request_buf[CLIENT_READ_BUF];
     for(;;) {
         if(pool->is_running == false) return NULL;
         sem_wait(&data->occupied_semaphore);
@@ -17,21 +16,8 @@ static void * thread_loop(void * arg){
         sem_post(&data->get_semaphore);
         sem_post(&data->empty_semaphore);
         
-        ssize_t num_read;
-        
-        memset(request_buf, 0, CLIENT_READ_BUF); // You will regret removing this line
+        http_handle_client(pool->http_handler, cfd);
 
-        num_read = read(cfd, request_buf, CLIENT_READ_BUF);
-        
-        http * my_http = http_create(NULL); //get config?
-        http_request * request = my_http->parse_request(request_buf, num_read);
-        http_response * response = my_http->build_response(request);
-
-        send_response(response, cfd);
-        
-        http_request_destroy(request);
-        http_response_destroy(response);
-        http_destroy(my_http);
         close(cfd);
     }
 }
@@ -61,7 +47,7 @@ void thread_pool_destroy(thread_pool* pool){
     free(pool);
 }
 
-thread_pool * thread_pool_create(){
+thread_pool * thread_pool_create(http * http_handler){
     thread_pool *pool = malloc(sizeof(thread_pool));
     shared_data *data = malloc(sizeof(shared_data));
     pool->is_running = false;
@@ -72,6 +58,7 @@ thread_pool * thread_pool_create(){
     sem_init(&data->get_semaphore, 0, 1);
 
     pool->data = data;
+    pool->http_handler = http_handler;
     return pool;
 }
 

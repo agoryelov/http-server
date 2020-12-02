@@ -20,14 +20,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-#define POOL_SIZE 10
-#define SEM_WORKER_READY "/worker_ready"
-#define SEM_WORKER_BINDED "/worker_binded"
-#define SEM_WAKE_WORKER "/wale_worker"
-#define SOCKET_PATH "/tmp/fd-pass.socket"
-#define DC_S_IRUSR 0400
-#define DC_S_IWUSR 0200
-#define SHMEM_HAME "is_running"
+#define NUM_PROCESSES 10
 
 typedef struct {
     sem_t * worker_ready;
