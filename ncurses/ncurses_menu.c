@@ -22,13 +22,6 @@ void create_config_item(config_item_t **config_items, int index, char *name, cha
     config_items[index]->field_type = field_type;
 }
 
-void delete_config_items(config_item_t **config_items) {
-    for (size_t i = 0; config_items[i] != NULL; ++i) {
-        free(config_items[i]);
-    }
-    free(config_items);
-}
-
 void set_item_userptrs(ITEM **items, config_item_t **config_items) {
     size_t i;
     for (i = 0; config_items[i] != NULL; ++i) {
