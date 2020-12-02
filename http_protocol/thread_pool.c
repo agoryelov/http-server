@@ -20,9 +20,8 @@ static void * thread_loop(void * arg){
         sem_post(&data->empty_semaphore);
 
         config * conf = get_config(pool->argc, pool->argv);
-        http * http_handler = http_create(conf);
-        http_handle_client(http_handler, cfd);
-        http_destroy(http_handler);
+        http_handle_client(conf, cfd);
+        destroy_config(conf);
 
         close(cfd);
     }
