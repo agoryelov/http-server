@@ -3,6 +3,8 @@
 
 #include <libconfig.h>
 
+#define MAX_PORT 65535
+
 /**
  * The config struct.
  */
