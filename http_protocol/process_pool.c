@@ -148,12 +148,8 @@ void worker_loop(process_pool * pool) {
         sem_post(sem->worker_ready);
         sem_wait(sem->wake_worker);
         if(!pool->mem->is_running){
-            printf("PROCESS SHOULD STOP\n");
             exit(EXIT_SUCCESS);
-            printf("PROCESS SHOULD NOT PRINT THIS\n");
-        } else{
-            printf("PROCESS SHOULD CONTINUE\n");
-        }
+        } 
         int worker_fd = worker_bind();
         sem_post(sem->worker_binded);
 
