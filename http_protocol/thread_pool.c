@@ -1,5 +1,7 @@
 #include "thread_pool.h"
 
+
+
 static void * thread_loop(void * arg){
     thread_pool *pool = arg;
     shared_data *data = pool->data;

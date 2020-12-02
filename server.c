@@ -12,7 +12,6 @@
 
 #include "http_protocol/thread_pool.h"
 #include "http_protocol/process_pool.h"
-#include "shared.h"
 #include "http_protocol/http.h"
 
 #define BACKLOG 5
@@ -20,10 +19,12 @@
 static int create_server_fd();
 
 int main(int argc, char **argv) {
-    int server_fd = create_server_fd();
-    for(;;){
-        config * conf = get_config(argc, argv);
-        http * my_http = http_create(conf);
+
+    config * conf = get_config(argc, argv);
+    http * my_http = http_create(conf);
+    int server_fd = create_server_fd(conf->port);
+
+    for(;;) {
         process_pool * p_pool;
         thread_pool * t_pool;
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-static int create_server_fd() {
+static int create_server_fd(int port) {
     struct sockaddr_in addr;
     int sfd;
     signal(SIGPIPE, SIG_IGN);
@@ -71,7 +72,7 @@ static int create_server_fd() {
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(PORT);
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     int optval = 1;
     setsockopt(sfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));

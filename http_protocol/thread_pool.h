@@ -6,7 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "./http.h"
-#include "../shared.h"
+
+#define NUM_THREADS 10
 
 struct shared_data
 {
