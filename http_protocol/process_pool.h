@@ -28,21 +28,22 @@ typedef struct {
     sem_t * wake_worker;
 } semaphores;
 
-typedef struct memory
-{
+typedef struct memory {
     bool is_running;
 } memory;
 
 typedef struct {
     semaphores * sem;
-    http * http_handler;
     memory * mem;
+
+    char ** argv;
+    int argc;
 } process_pool;
 
 void process_pool_start(process_pool * pool);
 void process_pool_stop(process_pool * pool);
 void process_pool_destroy(process_pool * pool);
-process_pool * process_pool_create(http * http_hander);
+process_pool * process_pool_create(int argc, char ** argv);
 void process_pool_notify(process_pool * pool, int cfd);
 
 #endif

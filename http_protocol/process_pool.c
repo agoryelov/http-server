@@ -14,10 +14,11 @@ static void worker_loop(process_pool * pool);
 static void send_socket(int http_client_fd);
 static semaphores * create_semaphores();
 
-process_pool * process_pool_create(http * http_hander) {
-    process_pool * pool = malloc(sizeof(process_pool));
+process_pool * process_pool_create(int argc, char ** argv) {
+    process_pool * pool = calloc(1, sizeof(process_pool));
     pool->sem = create_semaphores();
-    pool->http_handler = http_hander;
+    pool->argc = argc;
+    pool->argv = argv;
     memory *ptr;
     int shared_mem_fd = shm_open(SHMEM_HAME, O_CREAT | O_RDWR, 0666);
     ftruncate(shared_mem_fd, sizeof(memory));
@@ -60,7 +61,7 @@ void process_pool_destroy(process_pool * pool) {
 }
 
 static semaphores * create_semaphores() {
-    semaphores * sem = malloc(sizeof(semaphores));
+    semaphores * sem = calloc(1, sizeof(semaphores));
     sem_unlink(SEM_WORKER_READY);
     sem_unlink(SEM_WORKER_BINDED);
     sem_unlink(SEM_WAKE_WORKER);
@@ -151,7 +152,6 @@ static int worker_bind() {
 
 void worker_loop(process_pool * pool) {
     semaphores * sem = pool->sem;
-    http * my_http = pool->http_handler;
     for (;;) {
         sem_post(sem->worker_ready);
         sem_wait(sem->wake_worker);
@@ -164,7 +164,10 @@ void worker_loop(process_pool * pool) {
         int main_process_fd = accept(worker_fd, NULL, NULL);
         int http_client_fd = worker_receive(main_process_fd);
 
-        http_handle_client(my_http, http_client_fd);
+        config * conf = get_config(pool->argc, pool->argv);
+        http * http_handler = http_create(conf);
+        http_handle_client(http_handler, http_client_fd);
+        http_destroy(http_handler);
 
         close(worker_fd);
         close(main_process_fd);
