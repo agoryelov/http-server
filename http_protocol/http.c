@@ -144,9 +144,10 @@ void http_request_destroy(http_request * request) {
 
 void http_response_destroy(http_response * response) {
     if (response == NULL) return;
+    if (response->request_path != NULL)
+        free(response->request_path);
 
     sm_destroy(response->header_fields);
-    free(response->request_path);
     free(response);
 }
 
@@ -195,9 +196,9 @@ static char * get_utc_time() {
     time(&raw);
     utc = gmtime(&raw);
 
-    char * timetext = asctime(utc);
-    timetext[24] = '\0';
-    return timetext;
+    char * time_text = asctime(utc);
+    time_text[24] = '\0';
+    return time_text;
 }
 
 // Parsing according to example at: https://linux.die.net/man/3/strtok_r
@@ -229,6 +230,7 @@ static void parse_request_header(char * raw_header, http_request * request) {
 // Returns -1 if can't open either (Server Error)
 static int parse_uri_to_filepath(config * conf, char * request_uri, char ** request_path) {
     if (request_uri == NULL) {
+        *request_path = NULL;
         return -1;
     }
 
@@ -262,5 +264,6 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
         return 0;
     }
 
+    *request_path = NULL;
     return -1;
 }
