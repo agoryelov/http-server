@@ -116,6 +116,7 @@ void set_env_config(config *cfg) {
  * @param argv - arg values
  */
 void set_cmd_line_config(config *cfg, int argc, char **argv) {
+    optind = 1;
     int opt;
     int opt_index = 0;
     struct option long_options[] = {

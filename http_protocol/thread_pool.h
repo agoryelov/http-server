@@ -23,6 +23,7 @@ struct thread_pool {
     pthread_t threads [NUM_THREADS];
     int num_threads;
     bool is_running;
+    http * http_handler;
 };
 typedef struct thread_pool thread_pool;
 
