@@ -37,19 +37,17 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
         return;
     }
     int port;
-    const char *root_dir = "";
-    const char *index_page = "";
-    const char *not_found_page = "";
-    const char *mode = "";
+    const char *root_dir = NULL;
+    const char *index_page = NULL;
+    const char *not_found_page = NULL;
+    const char *mode = NULL;
+    char *port_s = NULL;
 
     int port_lookup_status = config_lookup_int(lib_config, "port", &port);
-    char *port_s = "";
     if (port_lookup_status != CONFIG_FALSE) {
         convert_int_to_string(port, &port_s);
     }
-    else {
-        port_s = strdup(port_s);
-    }
+
     config_lookup_string(lib_config, "mode", &mode);
     config_lookup_string(lib_config, "root_dir", &root_dir);
     config_lookup_string(lib_config, "index_page", &index_page);
@@ -63,11 +61,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
     config_items[5] = NULL;
 
     ITEM **items = calloc(NUM_ITEMS + 1, sizeof(ITEM *));
-    items[0] = new_item(config_items[0]->name, strdup(mode));
-    items[1] = new_item(config_items[1]->name, port_s);
-    items[2] = new_item(config_items[2]->name, strdup(root_dir));
-    items[3] = new_item(config_items[3]->name, strdup(index_page));
-    items[4] = new_item(config_items[4]->name, strdup(not_found_page));
+    items[0] = new_item(config_items[0]->name, strdup(mode != NULL ? mode : ""));
+    items[1] = new_item(config_items[1]->name, port_s != NULL ? port_s : strdup(""));
+    items[2] = new_item(config_items[2]->name, strdup(root_dir != NULL ? root_dir : ""));
+    items[3] = new_item(config_items[3]->name, strdup(index_page != NULL ? index_page : ""));
+    items[4] = new_item(config_items[4]->name, strdup(not_found_page != NULL ? not_found_page : ""));
     items[5] = NULL;
 
     set_item_userptrs(items, config_items);
