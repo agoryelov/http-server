@@ -47,11 +47,11 @@ int main(int argc, char **argv) {
             thread_pool_start(t_pool);
             printf("Starting threads\n");
             while(conf->mode == 't') {
+                int client_fd = accept(server_fd, NULL, NULL);
+                thread_pool_notify(t_pool, client_fd);
                 destroy_config(conf);
                 conf = get_config(argc, argv);
                 my_http->my_config = conf;
-                int client_fd = accept(server_fd, NULL, NULL);
-                thread_pool_notify(t_pool, client_fd);
             }
             thread_pool_stop(t_pool);
             thread_pool_destroy(t_pool);

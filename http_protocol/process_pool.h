@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <semaphore.h> 
@@ -26,6 +27,7 @@
 #define SOCKET_PATH "/tmp/fd-pass.socket"
 #define DC_S_IRUSR 0400
 #define DC_S_IWUSR 0200
+#define SHMEM_HAME "is_running"
 
 typedef struct {
     sem_t * worker_ready;
@@ -33,9 +35,15 @@ typedef struct {
     sem_t * wake_worker;
 } semaphores;
 
+typedef struct memory
+{
+    bool is_running;
+} memory;
+
 typedef struct {
     semaphores * sem;
     http * http_handler;
+    memory * mem;
 } process_pool;
 
 void process_pool_start(process_pool * pool);

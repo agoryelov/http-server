@@ -10,10 +10,16 @@ process_pool * process_pool_create(http * http_hander) {
     process_pool * pool = malloc(sizeof(process_pool));
     pool->sem = create_semaphores();
     pool->http_handler = http_hander;
+    memory *ptr;
+    int shared_mem_fd = shm_open(SHMEM_HAME, O_CREAT | O_RDWR, 0666);
+    ftruncate(shared_mem_fd, sizeof(memory));
+    ptr = mmap(0, sizeof(memory), PROT_WRITE|PROT_READ, MAP_SHARED, shared_mem_fd, 0);
+    pool->mem = ptr;
     return pool;
 }
 
 void process_pool_start(process_pool * pool) {
+    pool->mem->is_running = true;
     for(int i = 0; i < POOL_SIZE; i++){
         int pid = fork();
         if(pid == -1){
@@ -27,7 +33,9 @@ void process_pool_start(process_pool * pool) {
 }
 
 void process_pool_stop(process_pool * pool) {
-    
+    pool->mem->is_running = false;
+    for(int i = 0; i < POOL_SIZE; i++)
+        sem_post(pool->sem->wake_worker);
 }
 
 void process_pool_notify(process_pool * pool, int http_client_fd) {
@@ -40,7 +48,7 @@ void process_pool_notify(process_pool * pool, int http_client_fd) {
 }
 
 void process_pool_destroy(process_pool * pool) {
-
+    free(pool);
 }
 
 static semaphores * create_semaphores() {
@@ -139,6 +147,13 @@ void worker_loop(process_pool * pool) {
     for (;;) {
         sem_post(sem->worker_ready);
         sem_wait(sem->wake_worker);
+        if(!pool->mem->is_running){
+            printf("PROCESS SHOULD STOP\n");
+            exit(EXIT_SUCCESS);
+            printf("PROCESS SHOULD NOT PRINT THIS\n");
+        } else{
+            printf("PROCESS SHOULD CONTINUE\n");
+        }
         int worker_fd = worker_bind();
         sem_post(sem->worker_binded);
 
