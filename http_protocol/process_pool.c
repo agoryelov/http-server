@@ -1,5 +1,12 @@
 #include "./process_pool.h"
 
+#define SEM_WORKER_READY "/worker_ready"
+#define SEM_WORKER_BINDED "/worker_binded"
+#define SEM_WAKE_WORKER "/wale_worker"
+#define SOCKET_PATH "/tmp/fd-pass.socket"
+#define DC_S_IRUSR 0400
+#define DC_S_IWUSR 0200
+
 static int worker_bind();
 static int worker_receive();
 static void worker_loop(process_pool * pool);
@@ -14,7 +21,7 @@ process_pool * process_pool_create(http * http_hander) {
 }
 
 void process_pool_start(process_pool * pool) {
-    for(int i = 0; i < POOL_SIZE; i++){
+    for(int i = 0; i < NUM_PROCESSES; i++){
         int pid = fork();
         if(pid == -1){
             exit(-1);
