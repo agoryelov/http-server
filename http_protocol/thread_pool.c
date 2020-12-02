@@ -1,20 +1,28 @@
 #include "thread_pool.h"
 
+#include "./config.h"
+
 static void * thread_loop(void * arg){
     thread_pool *pool = arg;
     shared_data *data = pool->data;
 
     for(;;) {
-        if(pool->is_running == false) return NULL;
         sem_wait(&data->occupied_semaphore);
+        if(pool->is_running == false) {
+            sem_post(&data->killed_semaphore);
+            pthread_exit(NULL);
+        }
         sem_wait(&data->get_semaphore);
         
         int cfd = data->client_fd;
         
         sem_post(&data->get_semaphore);
         sem_post(&data->empty_semaphore);
-        
-        http_handle_client(pool->http_handler, cfd);
+
+        config * conf = get_config(pool->argc, pool->argv);
+        http * http_handler = http_create(conf);
+        http_handle_client(http_handler, cfd);
+        http_destroy(http_handler);
 
         close(cfd);
     }
@@ -29,34 +37,49 @@ void thread_pool_start(thread_pool* pool){
 
 void thread_pool_stop(thread_pool* pool){
     shared_data *data = pool->data;
-    pool->is_running = false;
 
-    for(int i = 0; i < NUM_THREADS; i++){
-        sem_post(&data->put_semaphore);
-        sem_post(&data->occupied_semaphore);
-    }
-    for(int i = 0; i < NUM_THREADS; i++){
-        pthread_join(pool->threads[i], NULL);
+    for(int i = 0; i < NUM_THREADS; i++) {
+        pthread_detach(pool->threads[i]);
     }
     
+    pool->is_running = false;
+
+    for(int i = 0; i < NUM_THREADS; i++) {
+        sem_post(&data->occupied_semaphore);
+    }    
 }
-void thread_pool_destroy(thread_pool* pool){
-    free(pool->data);
+
+void thread_pool_destroy(thread_pool * pool) {
+    shared_data *data = pool->data;
+
+    for(int i = 0; i < NUM_THREADS; i++) {
+        sem_wait(&data->killed_semaphore);
+    }
+    
+    sem_destroy(&data->occupied_semaphore);
+    sem_destroy(&data->empty_semaphore);
+    sem_destroy(&data->put_semaphore);
+    sem_destroy(&data->get_semaphore);
+    sem_destroy(&data->killed_semaphore);
+
+    free(data);
     free(pool);
 }
 
-thread_pool * thread_pool_create(http * http_handler){
-    thread_pool *pool = malloc(sizeof(thread_pool));
-    shared_data *data = malloc(sizeof(shared_data));
+thread_pool * thread_pool_create(int argc, char ** argv) {
+    thread_pool *pool = calloc(1, sizeof(thread_pool));
+    shared_data *data = calloc(1, sizeof(shared_data));
     pool->is_running = false;
+    pool->argc = argc;
+    pool->argv = argv;
 
     sem_init(&data->occupied_semaphore, 0, 0);
     sem_init(&data->empty_semaphore, 0, 1);
     sem_init(&data->put_semaphore, 0, 1);
     sem_init(&data->get_semaphore, 0, 1);
+    sem_init(&data->killed_semaphore, 0, 0);
 
     pool->data = data;
-    pool->http_handler = http_handler;
     return pool;
 }
 

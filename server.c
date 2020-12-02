@@ -12,7 +12,6 @@
 
 #include "http_protocol/thread_pool.h"
 #include "http_protocol/process_pool.h"
-#include "shared.h"
 #include "http_protocol/http.h"
 
 #define BACKLOG 5
@@ -20,50 +19,49 @@
 static int create_server_fd();
 
 int main(int argc, char **argv) {
-    int server_fd = create_server_fd();
-    for(;;){
-        config * conf = get_config(argc, argv);
-        http * my_http = http_create(conf);
+
+    config * conf = get_config(argc, argv);
+    int server_fd = create_server_fd(conf->port);
+
+    for(;;) {
         process_pool * p_pool;
         thread_pool * t_pool;
 
         if(conf->mode == 'p'){
-            p_pool = process_pool_create(my_http);
+            p_pool = process_pool_create(argc, argv);
             process_pool_start(p_pool);
             printf("Starting processes\n");
             while(conf->mode == 'p') {
-                destroy_config(conf);
-                conf = get_config(argc, argv);
-                my_http->my_config = conf;
                 int client_fd = accept(server_fd, NULL, NULL);
                 process_pool_notify(p_pool, client_fd);
+                destroy_config(conf);
+                conf = get_config(argc, argv);
             }
             process_pool_stop(p_pool);
             process_pool_destroy(p_pool);
         }
 
-        if(conf->mode == 't'){
-            t_pool = thread_pool_create(my_http);
+        if(conf->mode == 't') {
+            t_pool = thread_pool_create(argc, argv);
             thread_pool_start(t_pool);
             printf("Starting threads\n");
             while(conf->mode == 't') {
-                destroy_config(conf);
-                conf = get_config(argc, argv);
-                my_http->my_config = conf;
                 int client_fd = accept(server_fd, NULL, NULL);
                 thread_pool_notify(t_pool, client_fd);
+                destroy_config(conf);
+                conf = get_config(argc, argv);
             }
             thread_pool_stop(t_pool);
             thread_pool_destroy(t_pool);
         }
-
-        destroy_config(conf);
     }
+
+    destroy_config(conf);
     
     return EXIT_SUCCESS;
 }
 
-static int create_server_fd() {
+static int create_server_fd(int port) {
     struct sockaddr_in addr;
     int sfd;
     signal(SIGPIPE, SIG_IGN);
@@ -71,7 +69,7 @@ static int create_server_fd() {
     sfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(PORT);
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     int optval = 1;
     setsockopt(sfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
