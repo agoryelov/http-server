@@ -74,7 +74,6 @@ void display_main_menu(MENU *menu, WINDOW *sub) {
     set_keyboard_menu();
     set_menu_mark(menu, " > ");
     set_menu_win(menu, stdscr);
-    sub = derwin(stdscr, LINES - 11, COLS - 8, 10, 4);
     set_menu_sub(menu, sub);
     post_menu(menu);
 }

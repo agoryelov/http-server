@@ -5,6 +5,8 @@
 #include "ncurses_menu.h"
 #include "ncurses_shared.h"
 
+void exit_curses(int);
+
 static void print_ascii_art_title() {
     int title_cols = 44;
     if (COLS < title_cols) {
@@ -47,6 +49,7 @@ int main() {
     print_ascii_art_title();
     print_instructions();
     create_main_menu(&main_menu, &lib_config, config_items);
+    main_menu_window = derwin(stdscr, LINES - 11, COLS - 8, 10, 4);
     display_main_menu(main_menu, main_menu_window);
     box(stdscr, 0, 0);
 
