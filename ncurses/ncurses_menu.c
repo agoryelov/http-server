@@ -3,6 +3,7 @@
 #include <curses.h>
 #include <libconfig.h>
 #include <malloc.h>
+#include <string.h>
 #include "ncurses_form.h"
 #include "ncurses_shared.h"
 
@@ -39,7 +40,7 @@ void set_item_userptrs(ITEM **items, config_item_t **config_items) {
 void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items) {
     config_init(lib_config);
     if (!config_read_file(lib_config, CONFIG_PATH)) {
-        printf("%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config), config_error_text(lib_config));
+        fprintf(stderr, "%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config), config_error_text(lib_config));
         return;
     }
     int port;
@@ -66,11 +67,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
     config_items[5] = NULL;
 
     ITEM **items = calloc(NUM_ITEMS + 1, sizeof(ITEM *));
-    items[0] = new_item(config_items[0]->name, mode);
+    items[0] = new_item(config_items[0]->name, strdup(mode));
     items[1] = new_item(config_items[1]->name, port_s);
-    items[2] = new_item(config_items[2]->name, root_dir);
-    items[3] = new_item(config_items[3]->name, index_page);
-    items[4] = new_item(config_items[4]->name, not_found_page);
+    items[2] = new_item(config_items[2]->name, strdup(root_dir));
+    items[3] = new_item(config_items[3]->name, strdup(index_page));
+    items[4] = new_item(config_items[4]->name, strdup(not_found_page));
     items[5] = NULL;
 
     set_item_userptrs(items, config_items);
@@ -90,7 +91,8 @@ void update_main_menu(MENU *menu, ITEM *item, char *value) {
     int index = item_index(item);
     ITEM **items = menu_items(menu);
     config_item_t *config_item = item_userptr(item);
-    items[index] = new_item(item_name(item), value);
+    free((char*)item_description(item));
+    items[index] = new_item(item_name(item), strdup(value));
     set_item_userptr(items[index], config_item);
     free(item);
     unpost_menu(menu);
@@ -100,6 +102,7 @@ void update_main_menu(MENU *menu, ITEM *item, char *value) {
 void delete_main_menu(MENU *menu) {
     ITEM **items = menu_items(menu);
     for (size_t i = 0; items[i] != NULL; ++i) {
+        free((char*)item_description(items[i]));
         free_item(items[i]);
     }
     free_menu(menu);

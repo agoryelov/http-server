@@ -7,8 +7,6 @@
 #include "ncurses_menu.h"
 #include <stdlib.h>
 
-#define MAX_PORT 65535
-
 void set_keyboard_form() {
     cbreak();
     noecho();
