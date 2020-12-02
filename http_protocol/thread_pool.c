@@ -1,7 +1,13 @@
 #include "thread_pool.h"
 
 #include "./config.h"
-
+/**
+ * The loop uses semaphores to post that a thread is ready for work then waits until a thread
+ * should be woken. Once woken the thread will exit if is_running is false in the thread_pool object.
+ * It will proceed to grab the client fd from the shared data then posts that it has the client fd.
+ * Once it has the client fd it will handle the http request.
+ * @param pool
+ */
 static void * thread_loop(void * arg){
     thread_pool *pool = arg;
     shared_data *data = pool->data;
