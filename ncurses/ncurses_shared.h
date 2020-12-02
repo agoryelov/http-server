@@ -8,6 +8,10 @@
 #define INSTRUCTIONS_HEIGHT 1
 #define MAX_PORT 65535
 
+/**
+ * A config item struct, with the name, the path in the config file,
+ * the config type, and the field type.
+ */
 typedef struct config_item {
     char *name;
     char *path;
@@ -15,6 +19,13 @@ typedef struct config_item {
     FIELDTYPE *field_type;
 } config_item_t;
 
+/**
+ * Print text to the center of the window at the specified row,
+ * justified at the center column.
+ * @param window - the window to print to
+ * @param row - the row
+ * @param fmt - the text
+ */
 void mvwprintw_center_justify(WINDOW *window, int row, char *fmt);
 
 /**
