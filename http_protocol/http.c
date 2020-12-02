@@ -164,6 +164,7 @@ void http_response_destroy(http_response * response) {
 }
 
 void http_destroy(http * http) {
+    destroy_config(http->my_config);
     free(http);
 }
 
