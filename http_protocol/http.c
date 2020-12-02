@@ -9,8 +9,7 @@
 #include <unistd.h>
 
 #define CRLF "\r\n"
-
-#define MAX_REQUEST_LEN 2048
+#define BODY_BUFFER 256
 
 static void parse_request_header(char * raw_header, http_request * request);
 static int parse_request_method(char * method);
@@ -72,19 +71,19 @@ http_response * build_response(config * conf, http_request * request) {
     int path_status = parse_uri_to_filepath(conf, request->request_uri, &response->request_path);
 
     if (path_status == -1) {
-        response->response_code = 500;
+        response->response_code = HTTP_SERVER_ERROR;
         return response;
     } else if (path_status == 0) {
-        response->response_code = 404;
+        response->response_code = HTTP_NOT_FOUND;
     } else {
-        response->response_code = 200;
+        response->response_code = HTTP_OK;
     }
 
     struct stat st;
     int stat_status = stat(response->request_path, &st);
 
     if (stat_status) {
-        response->response_code = 500;
+        response->response_code = HTTP_SERVER_ERROR;
         return response;
     } else {
         long size = st.st_size;
@@ -108,7 +107,7 @@ void send_response(http_response * response, int cfd) {
     size_t header_lines = sm_size(header_fields);
     char ** header_keys = sm_get_keys(header_fields);
     for (size_t i = 0; i < header_lines; i++) {
-        char buf[200];
+        char buf[MAX_HEADER_VALUE_LEN];
         sprintf(buf, "%s: %s", header_keys[i], sm_get(header_fields, header_keys[i]));
         int len = strlen(buf);
         write(cfd, buf, len);
@@ -118,17 +117,17 @@ void send_response(http_response * response, int cfd) {
     write(cfd, CRLF, 2);
 
     if (response->method == METHOD_HEAD) return;
-    if (response->response_code == 500) return;
+    if (response->response_code == HTTP_SERVER_ERROR) return;
 
     const char * content_filepath = response->request_path;
     int content_fd = open(content_filepath, O_RDONLY);
 
     ssize_t num_read;
-    char buf[200];
-    num_read = read(content_fd, buf, 200);
+    char buf[BODY_BUFFER];
+    num_read = read(content_fd, buf, BODY_BUFFER);
     while (num_read > 0) {
         write(cfd, buf, num_read);
-        num_read = read(content_fd, buf, 200);
+        num_read = read(content_fd, buf, BODY_BUFFER);
     }
     close(content_fd);
 }
@@ -174,15 +173,15 @@ static int parse_request_method(char * method) {
 }
 
 static char * get_status_phrase(int status_code) {
-    if (status_code == 200) {
+    if (status_code == HTTP_OK) {
         return "200 OK";
     }
     
-    if (status_code == 404) {
+    if (status_code == HTTP_NOT_FOUND) {
         return "404 Not Found";
     }
 
-    if (status_code == 400) {
+    if (status_code == HTTP_BAD_REQUEST) {
         return "400 Bad Request";
     }
 
@@ -238,14 +237,12 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
     char * not_found_page = conf->not_found_page;
     char * index_page = conf->index_page;
 
-    const int max_path = 2000;
-
     if (strcmp(request_uri, "/") == 0) {
         request_uri = index_page;
     }
 
-    char filepath_buf[max_path];
-    memset(filepath_buf, 0, max_path);
+    char filepath_buf[MAX_URI_PATH_LEN];
+    memset(filepath_buf, 0, MAX_URI_PATH_LEN);
     sprintf(filepath_buf, "%s%s", serving_directory, request_uri);
 
     if( access( filepath_buf, F_OK ) != -1 ) {
@@ -255,7 +252,7 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
         return 1;
     }
 
-    memset(filepath_buf, 0, max_path);
+    memset(filepath_buf, 0, MAX_URI_PATH_LEN);
     sprintf(filepath_buf, "%s%s", serving_directory, not_found_page);
 
     if( access( filepath_buf, F_OK ) != -1 ) {

@@ -10,6 +10,15 @@
 #define METHOD_HEAD 1
 #define METHOD_GET 2
 
+#define HTTP_OK 200
+#define HTTP_BAD_REQUEST 400
+#define HTTP_NOT_FOUND 404
+#define HTTP_SERVER_ERROR 500
+
+#define MAX_REQUEST_LEN 2048
+#define MAX_HEADER_VALUE_LEN 1024
+#define MAX_URI_PATH_LEN 1024
+
 typedef struct  {
     int method;
     int response_code;
