@@ -44,15 +44,18 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
         return;
     }
     int port;
-    const char *root_dir = NULL;
-    const char *index_page = NULL;
-    const char *not_found_page = NULL;
-    const char *mode = NULL;
+    const char *root_dir = "";
+    const char *index_page = "";
+    const char *not_found_page = "";
+    const char *mode = "";
 
     int port_lookup_status = config_lookup_int(lib_config, "port", &port);
-    char *port_s = NULL;
+    char *port_s = "";
     if (port_lookup_status != CONFIG_FALSE) {
         convert_int_to_string(port, &port_s);
+    }
+    else {
+        port_s = strdup(port_s);
     }
     config_lookup_string(lib_config, "mode", &mode);
     config_lookup_string(lib_config, "root_dir", &root_dir);
