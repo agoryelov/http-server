@@ -9,7 +9,7 @@ static unsigned long hash(const char *str);
 static void pairs_destroy(pair * pairs, size_t pair_count);
 static void sm_put_closed_hashing(str_map * map, char * key, char * value);
 static void sm_set_pair(str_map * map, pair * pair, char * key, char * value);
-static void sm_double_capacity(str_map * pair);
+static void sm_double_capacity(str_map * map);
 static void sm_swap(str_map * left, str_map * right);
 static pair * sm_get_pair(str_map * map, char * key);
 
@@ -47,7 +47,6 @@ void sm_put(str_map * map, char * key, char * value) {
     }
 
     sm_put_closed_hashing(map, key, value);
-    return;
 }
 
 char * sm_get(str_map * map, char * key) {

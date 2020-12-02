@@ -19,29 +19,18 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
 static char * get_status_phrase(int status_code);
 static char * get_utc_time();
 
-void http_handle_client(http * http_handler, int cfd) {
+void http_handle_client(config * conf, int cfd) {
     char request_buf[MAX_REQUEST_LEN];
     memset(request_buf, 0, MAX_REQUEST_LEN); // You will regret removing this line
     
     ssize_t num_read = read(cfd, request_buf, MAX_REQUEST_LEN);
 
     http_request * request = parse_request(request_buf, num_read);
-    http_response * response = build_response(http_handler, request);
+    http_response * response = build_response(conf, request);
     send_response(response, cfd);
 
     http_request_destroy(request);
     http_response_destroy(response);
-}
-
-http * http_create(config * http_config) {
-    http * new_http = malloc(sizeof(http));
-
-    new_http->my_config = http_config;
-    new_http->parse_request = parse_request;
-    new_http->send_response = send_response;
-    new_http->build_response = build_response;
-
-    return new_http;
 }
 
 http_request * parse_request(char * request_text, size_t request_len) {
@@ -66,7 +55,7 @@ http_request * parse_request(char * request_text, size_t request_len) {
     return request;
 }
 
-http_response * build_response(http * http_handler, http_request * request) {
+http_response * build_response(config * conf, http_request * request) {
     str_map * header_fields = sm_create(4);
     sm_put(header_fields, "Server", "DataComm/0.1");
     sm_put(header_fields, "Date", get_utc_time());
@@ -80,7 +69,7 @@ http_response * build_response(http * http_handler, http_request * request) {
     }
 
     response->method = request->method;
-    int path_status = parse_uri_to_filepath(http_handler->my_config, request->request_uri, &response->request_path);
+    int path_status = parse_uri_to_filepath(conf, request->request_uri, &response->request_path);
 
     if (path_status == -1) {
         response->response_code = 500;
@@ -144,7 +133,6 @@ void send_response(http_response * response, int cfd) {
     close(content_fd);
 }
 
-
 void http_request_destroy(http_request * request) {
     if (request == NULL) return;
 
@@ -161,11 +149,6 @@ void http_response_destroy(http_response * response) {
     sm_destroy(response->header_fields);
     free(response->request_path);
     free(response);
-}
-
-void http_destroy(http * http) {
-    destroy_config(http->my_config);
-    free(http);
 }
 
 static char * substring(const char * string, size_t start, size_t end) {

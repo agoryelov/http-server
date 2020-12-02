@@ -165,9 +165,8 @@ void worker_loop(process_pool * pool) {
         int http_client_fd = worker_receive(main_process_fd);
 
         config * conf = get_config(pool->argc, pool->argv);
-        http * http_handler = http_create(conf);
-        http_handle_client(http_handler, http_client_fd);
-        http_destroy(http_handler);
+        http_handle_client(conf, http_client_fd);
+        destroy_config(conf);
 
         close(worker_fd);
         close(main_process_fd);

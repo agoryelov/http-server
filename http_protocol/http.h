@@ -25,21 +25,37 @@ typedef struct  {
     char * request_body;
 } http_request;
 
-typedef struct http http;
-struct http {
-    http_request * (*parse_request)(char *, size_t);
-    http_response * (*build_response)(http *, http_request *);
-    void (*send_response)(http_response *, int);
-    config * my_config;
-};
-
-http * http_create(config * http_config);
+/**
+ * Parses an http request of size request_len and returns request content
+ * formatted into a new http_request struct.
+ */
 http_request * parse_request(char * request_text, size_t request_len);
-http_response * build_response(http * http_handler, http_request * request);
+
+/**
+ * Builds an http_response based on the passed in http_request.
+ */
+http_response * build_response(config * conf, http_request * request);
+
+/**
+ * Sends an http_response to the socket file descriptor specified by cfd
+ */
 void send_response(http_response * response, int cfd);
-void http_destroy(http * http);
+
+/**
+ * Destroys an http_request and performs any other necessary clean up.
+ */
 void http_request_destroy(http_request * request);
+
+/**
+ * Destroys an http_response and performs any other necessary clean up.
+ */
 void http_response_destroy(http_response * response);
-void http_handle_client(http * http_handler, int cfd);
+
+/**
+ * High-level interface to handle an http request from a client on socket. This function
+ * makes use of parse_request, build_response, and send_response to handle a request
+ * from a socket specified by cfd.
+ */
+void http_handle_client(config * conf, int cfd);
 
 #endif
