@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
 #include "config.h"
@@ -15,27 +14,10 @@
 #define DEFAULT_NOT_FOUND_PAGE "/404.html"
 
 static void set_default_config(config *cfg);
-
 static void set_file_config(config *cfg);
-
 static void set_env_config(config *cfg);
-
 static void set_cmd_line_config(config *cfg, int argc, char **argv);
-
 static void validate_config(config *cfg);
-
-static int is_valid_port(int port) {
-    return port >= 0 && port <= MAX_PORT;
-}
-
-static int is_valid_mode(const char *mode) {
-    return *mode == 'p' || *mode == 't';
-}
-
-static int is_valid_directory(const char *path) {
-    struct stat s;
-    return !(stat(path, &s) != 0 || !S_ISDIR(s.st_mode));
-}
 
 config *get_config(int argc, char **argv) {
     config *cfg = malloc(sizeof(config));
@@ -54,6 +36,40 @@ void destroy_config(config *cfg) {
     free(cfg);
 }
 
+/**
+ * Returns whether the port is a valid port.
+ * @param port - the port
+ * @return whether the port is valid
+ */
+static int is_valid_port(int port) {
+    return port >= 0 && port <= MAX_PORT;
+}
+
+/**
+ * Returns whether the mode is a valid mode.
+ * Valid modes are 'p' and 't'.
+ * @param mode - the mode
+ * @return whether the mode is valid
+ */
+static int is_valid_mode(const char *mode) {
+    return *mode == 'p' || *mode == 't';
+}
+
+/**
+ * Returns whether the path is a valid directory.
+ * @param path - the path to check
+ * @return whether the path is valid
+ */
+static int is_valid_directory(const char *path) {
+    struct stat s;
+    return !(stat(path, &s) != 0 || !S_ISDIR(s.st_mode));
+}
+
+/**
+ * Validates the config for any critical errors, exiting the program if found.
+ * Program will exit when the root directory does not exist.
+ * @param cfg - the config
+ */
 static void validate_config(config *cfg) {
     if (!is_valid_directory(cfg->root_dir)) {
         fprintf(stderr, "Root directory '%s' does not exist.\n", cfg->root_dir);
@@ -61,6 +77,10 @@ static void validate_config(config *cfg) {
     }
 }
 
+/**
+ * Sets the default values for the config.
+ * @param cfg - the config
+ */
 static void set_default_config(config *cfg) {
     cfg->root_dir = strdup(DEFAULT_ROOT_DIR);
     cfg->index_page = strdup(DEFAULT_INDEX_PAGE);

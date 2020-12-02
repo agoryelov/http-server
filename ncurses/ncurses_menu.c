@@ -2,7 +2,6 @@
 #include <menu.h>
 #include <curses.h>
 #include <libconfig.h>
-#include <malloc.h>
 #include <string.h>
 #include "ncurses_form.h"
 #include "ncurses_shared.h"
@@ -102,7 +101,7 @@ void delete_main_menu(MENU *menu) {
     free_menu(menu);
 }
 
-void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
+void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window) {
     int c;
     while ((c = getch()) != KEY_F(1)) {
         switch (c) {
@@ -115,7 +114,7 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window_body) {
             case 10: {   // ENTER KEY
                 ITEM *current = current_item(menu);
                 init_item_form(menu, current, lib_config);
-                display_main_menu(menu, window_body);
+                display_main_menu(menu, window);
                 break;
             }
             default:

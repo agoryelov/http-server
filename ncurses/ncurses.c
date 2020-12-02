@@ -1,14 +1,8 @@
 #include <curses.h>
 #include <menu.h>
-#include <form.h>
-#include <panel.h>
 #include <libconfig.h>
-#include <stdlib.h>
 #include <string.h>
-#include "../http_protocol/config.h"
-#include "ncurses_form.h"
 #include "ncurses_menu.h"
-#include "ncurses_panel.h"
 #include "ncurses_shared.h"
 
 static void print_ascii_art_title() {
@@ -56,7 +50,7 @@ int main() {
     display_main_menu(main_menu, main_menu_window);
     box(stdscr, 0, 0);
 
-    // Loop
+    // Process
     process_menu_input(main_menu, &lib_config, main_menu_window);
 
     // Cleanup

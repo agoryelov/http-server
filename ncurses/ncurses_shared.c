@@ -9,12 +9,6 @@ void mvwprintw_center_justify(WINDOW *window, int row, char *fmt) {
     mvwprintw(window, row, midpoint_x - strlen(fmt) / 2, fmt);
 }
 
-/**
- * "Trims" the trailing whitespace of the char array
- * by looking for the location after the last non-whitespace
- * character, and setting that as the null terminator.
- * @param str - the char array to trim
- */
 void trim_trailing_whitespace(char *str) {
     if (str[0] == '\0') {
         return;

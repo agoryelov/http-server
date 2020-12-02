@@ -37,12 +37,12 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
     *form = new_form(field);
 }
 
-void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config) {
+void display_form(FORM *form, WINDOW *header, WINDOW *sub, config_item_t *config_item) {
     set_keyboard_form();
     set_form_win(form, header);
     set_form_sub(form, sub);
     post_form(form);
-    mvwprintw_center_justify(header, 2, config->name);
+    mvwprintw_center_justify(header, 2, config_item->name);
     mvwprintw_center_justify(header, getmaxy(header) - 3, "[F1] Return     [Enter] Save");
     box(header, 0, 0);
 }
@@ -121,7 +121,7 @@ void init_item_form(MENU *menu, ITEM *item, config_t *lib_config)
     create_form(item, field, &form, &header, &sub);
     display_form(form, header, sub, item_userptr(item));
 
-    // Loop
+    // Process
     process_form_input(form, field[0], item, menu, lib_config);
 
     // Cleanup
