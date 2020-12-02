@@ -6,6 +6,7 @@
 #define MARGIN 1
 #define ASCII_TITLE_HEIGHT 5
 #define INSTRUCTIONS_HEIGHT 1
+#define MAX_PORT 65535
 
 typedef struct config_item {
     char *name;

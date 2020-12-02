@@ -8,16 +8,34 @@
 #include "config.h"
 
 #define CONFIG_PATH "../config.cfg"
+#define DEFAULT_PORT 80
+#define DEFAULT_MODE 't'
+#define DEFAULT_ROOT_DIR "../server_directory"
+#define DEFAULT_INDEX_PAGE "/index.html"
+#define DEFAULT_NOT_FOUND_PAGE "/404.html"
 
-void set_default_config(config *cfg);
+static void set_default_config(config *cfg);
 
-void set_file_config(config *cfg);
+static void set_file_config(config *cfg);
 
-void set_env_config(config *cfg);
+static void set_env_config(config *cfg);
 
-void set_cmd_line_config(config *cfg, int argc, char **argv);
+static void set_cmd_line_config(config *cfg, int argc, char **argv);
 
-void validate_config(config *cfg);
+static void validate_config(config *cfg);
+
+static int is_valid_port(int port) {
+    return port >= 0 && port <= MAX_PORT;
+}
+
+static int is_valid_mode(const char *mode) {
+    return *mode == 'p' || *mode == 't';
+}
+
+static int is_valid_directory(const char *path) {
+    struct stat s;
+    return !(stat(path, &s) != 0 || !S_ISDIR(s.st_mode));
+}
 
 config *get_config(int argc, char **argv) {
     config *cfg = malloc(sizeof(config));
@@ -36,46 +54,52 @@ void destroy_config(config *cfg) {
     free(cfg);
 }
 
-void validate_config(config *cfg) {
-    struct stat s;
-    if (stat(cfg->root_dir, &s) != 0 || !S_ISDIR(s.st_mode)) {
+static void validate_config(config *cfg) {
+    if (!is_valid_directory(cfg->root_dir)) {
         fprintf(stderr, "Root directory '%s' does not exist.\n", cfg->root_dir);
         exit(EXIT_FAILURE);
     }
 }
 
-void set_default_config(config *cfg) {
-    cfg->root_dir = strdup("../server_directory");
-    cfg->index_page = strdup("/index.html");
-    cfg->not_found_page = strdup("/404.html");
-    cfg->mode = 't';
-    cfg->port = 80;
+static void set_default_config(config *cfg) {
+    cfg->root_dir = strdup(DEFAULT_ROOT_DIR);
+    cfg->index_page = strdup(DEFAULT_INDEX_PAGE);
+    cfg->not_found_page = strdup(DEFAULT_NOT_FOUND_PAGE);
+    cfg->mode = DEFAULT_MODE;
+    cfg->port = DEFAULT_PORT;
 }
 
 /**
  * Sets values based on the config file for the config.
  * @param cfg - the config
  */
-void set_file_config(config *cfg) {
+static void set_file_config(config *cfg) {
     config_t lib_config;
     config_init(&lib_config);
 
     if (!config_read_file(&lib_config, CONFIG_PATH)) {
-        printf("%s:%d - %s\n", config_error_file(&lib_config), config_error_line(&lib_config),
-               config_error_text(&lib_config));
+        fprintf(stderr, "%s:%d - %s\n", config_error_file(&lib_config), config_error_line(&lib_config), config_error_text(&lib_config));
         config_destroy(&lib_config);
         return;
     }
 
-    config_lookup_int(&lib_config, "port", &cfg->port);
-
+    int port;
     const char *root_dir, *index_page, *not_found_page, *mode;
+    if (config_lookup_int(&lib_config, "port", &port) != CONFIG_FALSE) {
+        if (is_valid_port(port)) {
+            cfg->port = port;
+        }
+    }
     if (config_lookup_string(&lib_config, "mode", &mode) != CONFIG_FALSE) {
-        cfg->mode = tolower(mode[0]);
+        if (is_valid_mode(mode)) {
+            cfg->mode = (char) tolower(mode[0]);
+        }
     }
     if (config_lookup_string(&lib_config, "root_dir", &root_dir) != CONFIG_FALSE) {
-        free(cfg->root_dir);
-        cfg->root_dir = strdup(root_dir);
+        if (is_valid_directory(root_dir)) {
+            free(cfg->root_dir);
+            cfg->root_dir = strdup(root_dir);
+        }
     }
     if (config_lookup_string(&lib_config, "index_page", &index_page) != CONFIG_FALSE) {
         free(cfg->index_page);
@@ -93,21 +117,27 @@ void set_file_config(config *cfg) {
  * Sets the environment variables as values for the config.
  * @param cfg - the config
  */
-void set_env_config(config *cfg) {
+static void set_env_config(config *cfg) {
     char *env_var;
     if ((env_var = getenv("DC_HTTP_PORT")) != NULL) {
         char *ptr;
         int port = (int) strtoul(env_var, &ptr, 0);
-        if (*env_var != '\0' && *ptr == '\0') {
-            cfg->port = port;
+        if (is_valid_port(port)) {
+            if (*env_var != '\0' && *ptr == '\0') {
+                cfg->port = port;
+            }
         }
     }
     if ((env_var = getenv("DC_HTTP_MODE")) != NULL) {
-        cfg->mode = tolower(env_var[0]);
+        if (is_valid_mode(env_var)) {
+            cfg->mode = (char) tolower(env_var[0]);
+        }
     }
     if ((env_var = getenv("DC_HTTP_ROOT_DIR")) != NULL) {
-        free(cfg->root_dir);
-        cfg->root_dir = strdup(env_var);
+        if (is_valid_directory(env_var)) {
+            free(cfg->root_dir);
+            cfg->root_dir = strdup(env_var);
+        }
     }
     if ((env_var = getenv("DC_HTTP_INDEX_PAGE")) != NULL) {
         free(cfg->index_page);
@@ -127,7 +157,7 @@ void set_env_config(config *cfg) {
  * @param argc - arg count
  * @param argv - arg values
  */
-void set_cmd_line_config(config *cfg, int argc, char **argv) {
+static void set_cmd_line_config(config *cfg, int argc, char **argv) {
     optind = 1;
     int opt;
     int opt_index = 0;
@@ -148,17 +178,23 @@ void set_cmd_line_config(config *cfg, int argc, char **argv) {
             case 'p': {
                 char *ptr;
                 int port = (int) strtoul(optarg, &ptr, 0);
-                if (*optarg != '\0' && *ptr == '\0') {
-                    cfg->port = port;
+                if (is_valid_port(port)) {
+                    if (*optarg != '\0' && *ptr == '\0') {
+                        cfg->port = port;
+                    }
                 }
                 break;
             }
             case 'm':
-                cfg->mode = tolower(optarg[0]);
+                if (is_valid_mode(optarg)) {
+                    cfg->mode = (char) tolower(optarg[0]);
+                }
                 break;
             case 'r':
-                free(cfg->root_dir);
-                cfg->root_dir = strdup(optarg);
+                if (is_valid_directory(optarg)) {
+                    free(cfg->root_dir);
+                    cfg->root_dir = strdup(optarg);
+                }
                 break;
             case 'i':
                 free(cfg->index_page);
