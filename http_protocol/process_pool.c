@@ -4,6 +4,7 @@
 #define SEM_WORKER_BINDED "/worker_binded"
 #define SEM_WAKE_WORKER "/wale_worker"
 #define SOCKET_PATH "/tmp/fd-pass.socket"
+#define SHMEM_HAME "mem_is_running"
 #define DC_S_IRUSR 0400
 #define DC_S_IWUSR 0200
 
@@ -41,7 +42,7 @@ void process_pool_start(process_pool * pool) {
 
 void process_pool_stop(process_pool * pool) {
     pool->mem->is_running = false;
-    for(int i = 0; i < POOL_SIZE; i++)
+    for(int i = 0; i < NUM_PROCESSES; i++)
         sem_post(pool->sem->wake_worker);
 }
 

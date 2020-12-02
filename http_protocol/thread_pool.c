@@ -7,8 +7,8 @@ static void * thread_loop(void * arg){
     shared_data *data = pool->data;
 
     for(;;) {
-        if(pool->is_running == false) return NULL;
         sem_wait(&data->occupied_semaphore);
+        if(pool->is_running == false) return NULL;
         sem_wait(&data->get_semaphore);
         
         int cfd = data->client_fd;
@@ -34,7 +34,6 @@ void thread_pool_stop(thread_pool* pool){
     pool->is_running = false;
 
     for(int i = 0; i < NUM_THREADS; i++){
-        sem_post(&data->put_semaphore);
         sem_post(&data->occupied_semaphore);
     }
     for(int i = 0; i < NUM_THREADS; i++){

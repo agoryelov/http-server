@@ -33,11 +33,11 @@ int main(int argc, char **argv) {
             process_pool_start(p_pool);
             printf("Starting processes\n");
             while(conf->mode == 'p') {
+                int client_fd = accept(server_fd, NULL, NULL);
+                process_pool_notify(p_pool, client_fd);
                 destroy_config(conf);
                 conf = get_config(argc, argv);
                 my_http->my_config = conf;
-                int client_fd = accept(server_fd, NULL, NULL);
-                process_pool_notify(p_pool, client_fd);
             }
             process_pool_stop(p_pool);
             process_pool_destroy(p_pool);
