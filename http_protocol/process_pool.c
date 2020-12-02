@@ -8,10 +8,36 @@
 #define DC_S_IRUSR 0400
 #define DC_S_IWUSR 0200
 
+/**
+ * Creates and listens to a domain socket for with the path of SOCKET_PATH.
+ * @return socket_fd
+ */
 static int worker_bind();
+/**
+ * Waits to receive a msg containing the client fd over the passed
+ * in socket. Once the msg is received it returns the client fd.
+ * @param socked_fd
+ * @return client fd
+ */
 static int worker_receive();
+/**
+ * The loop uses semaphores to post that a worker is ready for work then waits until a worker process
+ * should be woken. Once woken the worker will exit if mode is not set to process else it binds to a socket
+ * then posts that the server can send the client's fd.  It uses worker receive to get the client fd then
+ * handles the http request.
+ * @param pool
+ */
 static void worker_loop(process_pool * pool);
+/**
+ * Creates and connects to a domain socket at SOCKET_PATH. once connected
+ * it sends the client fd to a worker process listening to the socket.
+ * @param http_client_fd
+ */
 static void send_socket(int http_client_fd);
+/**
+ * Creates the required semaphores for managing the process pool.
+ * @return semaphores
+ */
 static semaphores * create_semaphores();
 
 process_pool * process_pool_create(int argc, char ** argv) {
@@ -70,6 +96,7 @@ static semaphores * create_semaphores() {
     sem->wake_worker = sem_open(SEM_WAKE_WORKER, O_CREAT, DC_S_IRUSR|DC_S_IWUSR, 0);
     return sem;
 }
+
 
 static void send_socket(int http_client_fd) {
     struct sockaddr_un process_address;
@@ -150,7 +177,7 @@ static int worker_bind() {
     return socket_fd;
 }
 
-void worker_loop(process_pool * pool) {
+static void worker_loop(process_pool * pool) {
     semaphores * sem = pool->sem;
     for (;;) {
         sem_post(sem->worker_ready);
