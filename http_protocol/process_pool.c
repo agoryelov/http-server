@@ -4,7 +4,7 @@
 #define SEM_WORKER_BINDED "/worker_binded"
 #define SEM_WAKE_WORKER "/wale_worker"
 #define SOCKET_PATH "/tmp/fd-pass.socket"
-#define SHMEM_HAME "/tmp/dc/sharedmem"
+#define SHMEM_HAME "/sharedmem"
 #define DC_S_IRUSR 0400
 #define DC_S_IWUSR 0200
 
