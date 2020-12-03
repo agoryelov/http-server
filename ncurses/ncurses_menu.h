@@ -38,7 +38,7 @@ void set_item_userptrs(ITEM **items, config_item_t **config_items);
  * @param lib_config - the config struct which will be written to in order to update the config file
  * @param config_items - the config item struct array
  */
-void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items);
+void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items, ITEM **items);
 
 /**
  * Displays the main menu to the user
@@ -59,7 +59,7 @@ void update_main_menu(MENU *menu, ITEM *item, char *value);
  * Deletes the main menu, cleaning up and memory.
  * @param menu - the memory to delete
  */
-void delete_main_menu(MENU *menu);
+void delete_main_menu(MENU *menu, ITEM **items, config_item_t **config_items);
 
 /**
  * Processes the main menu's input in a loop, allowing users to

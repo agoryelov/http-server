@@ -69,7 +69,7 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
             int val = (int) strtoul(value, NULL, 0);
             if (val < 0) return;
             config_setting_set_int(setting, val);
-            update_main_menu(menu, item, value);
+            update_main_menu(menu, item, val == 0 ? "0" : value);
             break;
         }
         default:
@@ -126,9 +126,9 @@ void init_item_form(MENU *menu, ITEM *item, config_t *lib_config)
 
     // Cleanup
     unpost_form(form);
+    free_form(form);
     free_field(field[0]);
     free_field(field[1]);
-    free_form(form);
     delwin(sub);
     delwin(header);
 }
