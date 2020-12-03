@@ -4,7 +4,7 @@
 #define SEM_WORKER_BINDED "/worker_binded"
 #define SEM_WAKE_WORKER "/wale_worker"
 #define SOCKET_PATH "/tmp/fd-pass.socket"
-#define SHMEM_HAME "mem_is_running"
+#define SHMEM_HAME "/tmp/dc/sharedmem"
 #define DC_S_IRUSR 0400
 #define DC_S_IWUSR 0200
 
@@ -47,6 +47,10 @@ process_pool * process_pool_create(int argc, char ** argv) {
     pool->argv = argv;
     memory *ptr;
     int shared_mem_fd = shm_open(SHMEM_HAME, O_CREAT | O_RDWR, 0666);
+    if (shared_mem_fd < 0) {
+        perror("shm_open()");
+        exit(EXIT_FAILURE);
+    }
     ftruncate(shared_mem_fd, sizeof(memory));
     ptr = mmap(0, sizeof(memory), PROT_WRITE|PROT_READ, MAP_SHARED, shared_mem_fd, 0);
     pool->mem = ptr;
@@ -182,7 +186,7 @@ static void worker_loop(process_pool * pool) {
     for (;;) {
         sem_post(sem->worker_ready);
         sem_wait(sem->wake_worker);
-        if(!pool->mem->is_running){
+        if(!pool->mem->is_running) {
             exit(EXIT_SUCCESS);
         } 
         int worker_fd = worker_bind();
