@@ -60,6 +60,7 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
     }
 
     trim_trailing_whitespace(value);
+    if (value[0] == '\0') value = EMPTY_DESCRIPTION;
     switch(config_item->config_type) {
         case CONFIG_TYPE_STRING:
             config_setting_set_string(setting, value);

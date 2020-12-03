@@ -7,6 +7,7 @@
 #define ASCII_TITLE_HEIGHT 5
 #define INSTRUCTIONS_HEIGHT 1
 #define MAX_PORT 65535
+#define EMPTY_DESCRIPTION " "
 
 /**
  * A config item struct, with the name, the path in the config file,
