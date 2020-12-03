@@ -5,8 +5,6 @@
 #include "ncurses_menu.h"
 #include "ncurses_shared.h"
 
-void exit_curses(int);
-
 static void print_ascii_art_title() {
     int title_cols = 44;
     if (COLS < title_cols) {
