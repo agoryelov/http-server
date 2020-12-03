@@ -36,11 +36,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
         return;
     }
     int port;
-    const char *root_dir = EMPTY_DESCRIPTION;
-    const char *index_page = EMPTY_DESCRIPTION;
-    const char *not_found_page = EMPTY_DESCRIPTION;
-    const char *mode = EMPTY_DESCRIPTION;
-    char *port_s = EMPTY_DESCRIPTION;
+    const char *root_dir = NULL;
+    const char *index_page = NULL;
+    const char *not_found_page = NULL;
+    const char *mode = NULL;
+    char *port_s = NULL;
 
     int port_lookup_status = config_lookup_int(lib_config, "port", &port);
     if (port_lookup_status != CONFIG_FALSE) {
@@ -57,11 +57,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
     create_config_item(config_items, 3, "Index Page:", "index_page", CONFIG_TYPE_STRING, NULL);
     create_config_item(config_items, 4, "Not Found Page:", "not_found_page", CONFIG_TYPE_STRING, NULL);
     config_items[5] = NULL;
-    items[0] = new_item(config_items[0]->name, strdup(mode[0] != '\0' ? mode : EMPTY_DESCRIPTION));
-    items[1] = new_item(config_items[1]->name, port_s[0] != '\0' ? port_s : strdup(EMPTY_DESCRIPTION));
-    items[2] = new_item(config_items[2]->name, strdup(root_dir[0] != '\0' ? root_dir : EMPTY_DESCRIPTION));
-    items[3] = new_item(config_items[3]->name, strdup(index_page[0] != '\0' ? index_page : EMPTY_DESCRIPTION));
-    items[4] = new_item(config_items[4]->name, strdup(not_found_page[0] != '\0' ? not_found_page : EMPTY_DESCRIPTION));
+    items[0] = new_item(config_items[0]->name, strdup(mode != NULL ? mode : EMPTY_DESCRIPTION));
+    items[1] = new_item(config_items[1]->name, port_s != NULL ? port_s : strdup(EMPTY_DESCRIPTION));
+    items[2] = new_item(config_items[2]->name, strdup(root_dir != NULL ? root_dir : EMPTY_DESCRIPTION));
+    items[3] = new_item(config_items[3]->name, strdup(index_page != NULL ? index_page : EMPTY_DESCRIPTION));
+    items[4] = new_item(config_items[4]->name, strdup(not_found_page != NULL ? not_found_page : EMPTY_DESCRIPTION));
     items[5] = NULL;
 
     set_item_userptrs(items, config_items);
