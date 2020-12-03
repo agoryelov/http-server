@@ -111,8 +111,12 @@ void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window) {
                 break;
             case 10: {   // ENTER KEY
                 ITEM *current = current_item(menu);
+	        wclear(window);
+		wrefresh(window);
                 init_item_form(menu, current, lib_config);
-                display_main_menu(menu, window);
+                wclear(window);
+		wrefresh(window);
+		display_main_menu(menu, window);
                 break;
             }
             default:
