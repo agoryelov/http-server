@@ -36,11 +36,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
         return;
     }
     int port;
-    const char *root_dir = NULL;
-    const char *index_page = NULL;
-    const char *not_found_page = NULL;
-    const char *mode = NULL;
-    char *port_s = NULL;
+    const char *root_dir = EMPTY_DESCRIPTION;
+    const char *index_page = EMPTY_DESCRIPTION;
+    const char *not_found_page = EMPTY_DESCRIPTION;
+    const char *mode = EMPTY_DESCRIPTION;
+    char *port_s = EMPTY_DESCRIPTION;
 
     int port_lookup_status = config_lookup_int(lib_config, "port", &port);
     if (port_lookup_status != CONFIG_FALSE) {
