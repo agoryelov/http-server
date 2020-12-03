@@ -23,6 +23,8 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
     *sub = derwin(*header, height, width, 0, 0);
     field[0] = new_field(1, width - 12, 6, 6, 0, 0);
     field[1] = NULL;
+    wclear(*header);
+    wrefresh(*header);
     set_field_back(field[0], A_UNDERLINE);
     field_opts_off(field[0], O_STATIC);
     if (((config_item_t*)item_userptr(item))->field_type == TYPE_ENUM) {
@@ -129,6 +131,8 @@ void init_item_form(MENU *menu, ITEM *item, config_t *lib_config)
     free_form(form);
     free_field(field[0]);
     free_field(field[1]);
+    wclear(header);
+    wrefresh(header);
     delwin(sub);
     delwin(header);
 }
