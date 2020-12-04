@@ -10,15 +10,18 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <semaphore.h> 
 #include <pthread.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <errno.h>
+
+#include <dc/sys/mman.h>
+#include <dc/semaphore.h>
+#include <dc/sys/socket.h>
+#include <dc/unistd.h>
 
 #define NUM_PROCESSES 10
 /**
