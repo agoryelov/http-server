@@ -60,18 +60,14 @@ char * sm_get(str_map * map, char * key) {
 }
 
 int sm_exists(str_map * map, char * key) {
-    
-    if (map == NULL) {
+    if (map == NULL) 
         return 0;
-    }
 
-    if (key == NULL) {
+    if (key == NULL) 
         return 0;
-    }
     
-    if (sm_get_pair(map, key) == NULL) {
+    if (sm_get_pair(map, key) == NULL) 
         return 0;
-    }
     
     return 1;
 }
