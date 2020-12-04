@@ -181,12 +181,12 @@ static void set_cmd_line_config(config *cfg, int argc, char **argv) {
         if (help_flag) {
             fprintf(stdout, "%s", "Usage:\n\n");
             fprintf(stdout, "%s", "Command line options:\n");
-            fprintf(stdout, "%s", "-p=PORT, --port=PORT                 Sets the port to PORT (max 65535).\n");
-            fprintf(stdout, "%s", "-m=MODE, --mode=MODE                 Sets the mode to the MODE Processes or Threads.\n");
+            fprintf(stdout, "%s", "-p PORT, --port=PORT                 Sets the port to PORT (max 65535).\n");
+            fprintf(stdout, "%s", "-m MODE, --mode=MODE                 Sets the mode to the MODE Processes or Threads.\n");
             fprintf(stdout, "%s", "                                     Accepts any input which begins with 'p' or 't' (case insensitive). \n");
-            fprintf(stdout, "%s", "-r=DIR,  --root-dir=DIR              Sets DIR as the directory the html files are served from.\n");
-            fprintf(stdout, "%s", "-i=PAGE, --index-page=PAGE           Sets PAGE as the index page.\n");
-            fprintf(stdout, "%s", "-n=PAGE, --not-found-page=PAGE       Sets PAGE as the 404 page.\n\n");
+            fprintf(stdout, "%s", "-r DIR,  --root-dir=DIR              Sets DIR as the directory the html files are served from.\n");
+            fprintf(stdout, "%s", "-i PAGE, --index-page=PAGE           Sets PAGE as the index page.\n");
+            fprintf(stdout, "%s", "-n PAGE, --not-found-page=PAGE       Sets PAGE as the 404 page.\n\n");
 
             fprintf(stdout, "%s", "Environment variables:\n");
             fprintf(stdout, "%s", "DC_HTTP_PORT                         Sets the port (max 65535).\n");
