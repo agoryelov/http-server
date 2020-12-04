@@ -29,7 +29,7 @@ static void * thread_loop(void * arg){
         http_handle_client(conf, cfd);
         destroy_config(conf);
 
-        dc_close(cfd);
+        close(cfd);
     }
 }
 void thread_pool_start(thread_pool* pool){
