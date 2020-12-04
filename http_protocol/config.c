@@ -164,18 +164,40 @@ static void set_env_config(config *cfg) {
  * @param argv - arg values
  */
 static void set_cmd_line_config(config *cfg, int argc, char **argv) {
-    optind = 1;
     int opt;
     int opt_index = 0;
+    int help_flag = 0;
     struct option long_options[] = {
-            {"port",           optional_argument, 0, 'p'},
-            {"mode",           optional_argument, 0, 'm'},
-            {"root-dir",       optional_argument, 0, 'r'},
-            {"index-page",     optional_argument, 0, 'i'},
-            {"not-found-page", optional_argument, 0, 'n'},
+            {"port",           optional_argument, 0,          'p'},
+            {"mode",           optional_argument, 0,          'm'},
+            {"root-dir",       optional_argument, 0,          'r'},
+            {"index-page",     optional_argument, 0,          'i'},
+            {"not-found-page", optional_argument, 0,          'n'},
+            {"help",           no_argument,       &help_flag, 1}
     };
 
-    while ((opt = getopt_long(argc, argv, "", long_options, &opt_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "p:m:r:i:n:", long_options, &opt_index)) != -1) {
+        if (help_flag) {
+            fprintf(stdout, "%s", "Usage:\n\n");
+            fprintf(stdout, "%s", "Command line options:\n");
+            fprintf(stdout, "%s", "-p=PORT, --port=PORT                 Sets the port to PORT (max 65535).\n");
+            fprintf(stdout, "%s", "-m=MODE, --mode=MODE                 Sets the mode to the MODE Processes or Threads.\n");
+            fprintf(stdout, "%s", "                                     Accepts any input which begins with 'p' or 't' (case insensitive). \n");
+            fprintf(stdout, "%s", "-r=DIR,  --root-dir=DIR              Sets DIR as the directory the html files are served from.\n");
+            fprintf(stdout, "%s", "-i=PAGE, --index-page=PAGE           Sets PAGE as the index page.\n");
+            fprintf(stdout, "%s", "-n=PAGE, --not-found-page=PAGE       Sets PAGE as the 404 page.\n\n");
+
+            fprintf(stdout, "%s", "Environment variables:\n");
+            fprintf(stdout, "%s", "DC_HTTP_PORT                         Sets the port (max 65535).\n");
+            fprintf(stdout, "%s", "DC_HTTP_MODE                         Sets the mode to Processes or Threads.\n");
+            fprintf(stdout, "%s", "                                     Accepts any input which begins with 'p' or 't' (case insensitive). \n");
+            fprintf(stdout, "%s", "DC_HTTP_ROOT_DIR                     Sets the directory the html files are served from.\n");
+            fprintf(stdout, "%s", "DC_HTTP_INDEX_PAGE                   Sets the index page.\n");
+            fprintf(stdout, "%s", "DC_HTTP_NOT_FOUND_PAGE               Sets the 404 page.\n\n");
+
+            exit(EXIT_SUCCESS);
+        }
+
         if (optarg == NULL) {
             continue;
         }
