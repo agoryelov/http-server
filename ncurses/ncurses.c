@@ -38,7 +38,8 @@ int main() {
     // Declaration
     MENU *main_menu = NULL;
     WINDOW *main_menu_window = NULL;
-    config_item_t *config_items[] = { NULL };
+    config_item_t *config_items[NUM_ITEMS + 1] = { NULL };
+    ITEM *items[NUM_ITEMS + 1] = { NULL };
     config_t lib_config;
 
     // Setup
@@ -46,7 +47,8 @@ int main() {
     refresh();
     print_ascii_art_title();
     print_instructions();
-    create_main_menu(&main_menu, &lib_config, config_items);
+    create_main_menu(&main_menu, &lib_config, config_items, items);
+    main_menu_window = derwin(stdscr, LINES - 11, COLS - 8, 10, 4);
     display_main_menu(main_menu, main_menu_window);
     box(stdscr, 0, 0);
 
@@ -56,7 +58,7 @@ int main() {
     // Cleanup
     config_destroy(&lib_config);
     unpost_menu(main_menu);
-    delete_main_menu(main_menu);
+    delete_main_menu(main_menu, items, config_items);
     delwin(main_menu_window);
     endwin();
     exit_curses(0);

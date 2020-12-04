@@ -29,7 +29,7 @@ void set_item_userptrs(ITEM **items, config_item_t **config_items) {
     set_item_userptr(items[i], config_items[i]);
 }
 
-void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items) {
+void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_items, ITEM **items) {
     config_init(lib_config);
     if (!config_read_file(lib_config, CONFIG_PATH)) {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(lib_config), config_error_line(lib_config), config_error_text(lib_config));
@@ -57,13 +57,11 @@ void create_main_menu(MENU **menu, config_t *lib_config, config_item_t **config_
     create_config_item(config_items, 3, "Index Page:", "index_page", CONFIG_TYPE_STRING, NULL);
     create_config_item(config_items, 4, "Not Found Page:", "not_found_page", CONFIG_TYPE_STRING, NULL);
     config_items[5] = NULL;
-
-    ITEM **items = calloc(NUM_ITEMS + 1, sizeof(ITEM *));
-    items[0] = new_item(config_items[0]->name, strdup(mode != NULL ? mode : ""));
-    items[1] = new_item(config_items[1]->name, port_s != NULL ? port_s : strdup(""));
-    items[2] = new_item(config_items[2]->name, strdup(root_dir != NULL ? root_dir : ""));
-    items[3] = new_item(config_items[3]->name, strdup(index_page != NULL ? index_page : ""));
-    items[4] = new_item(config_items[4]->name, strdup(not_found_page != NULL ? not_found_page : ""));
+    items[0] = new_item(config_items[0]->name, strdup(mode != NULL ? mode : EMPTY_DESCRIPTION));
+    items[1] = new_item(config_items[1]->name, port_s != NULL ? port_s : strdup(EMPTY_DESCRIPTION));
+    items[2] = new_item(config_items[2]->name, strdup(root_dir != NULL ? root_dir : EMPTY_DESCRIPTION));
+    items[3] = new_item(config_items[3]->name, strdup(index_page != NULL ? index_page : EMPTY_DESCRIPTION));
+    items[4] = new_item(config_items[4]->name, strdup(not_found_page != NULL ? not_found_page : EMPTY_DESCRIPTION));
     items[5] = NULL;
 
     set_item_userptrs(items, config_items);
@@ -74,7 +72,6 @@ void display_main_menu(MENU *menu, WINDOW *sub) {
     set_keyboard_menu();
     set_menu_mark(menu, " > ");
     set_menu_win(menu, stdscr);
-    sub = derwin(stdscr, LINES - 11, COLS - 8, 10, 4);
     set_menu_sub(menu, sub);
     post_menu(menu);
 }
@@ -91,13 +88,15 @@ void update_main_menu(MENU *menu, ITEM *item, char *value) {
     set_menu_items(menu, items);
 }
 
-void delete_main_menu(MENU *menu) {
-    ITEM **items = menu_items(menu);
+void delete_main_menu(MENU *menu, ITEM **items, config_item_t **config_items) {
+    free_menu(menu);
     for (size_t i = 0; items[i] != NULL; ++i) {
         free((char*)item_description(items[i]));
         free_item(items[i]);
     }
-    free_menu(menu);
+    for (size_t i = 0; config_items[i] != NULL; ++i) {
+        free(config_items[i]);
+    }
 }
 
 void process_menu_input(MENU *menu, config_t *lib_config, WINDOW *window) {
