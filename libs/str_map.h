@@ -2,6 +2,7 @@
 #define STR_MAP_H
 
 #include <stdlib.h>
+#include <dc/stdlib.h>
 
 typedef struct  {
     int is_occupied;

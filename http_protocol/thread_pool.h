@@ -1,10 +1,15 @@
-#include <semaphore.h> 
-#include <pthread.h>
+#ifndef THREAD_POOL_H
+#define THREAD_POOL_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <dc/semaphore.h> 
+#include <dc/pthread.h>
+#include <dc/unistd.h>
 #include "./http.h"
 
 #define NUM_THREADS 10
@@ -70,3 +75,5 @@ thread_pool * thread_pool_create(int argc, char ** argv);
  * @return
  */
 void thread_pool_notify(thread_pool* pool, int cfd);
+
+#endif
