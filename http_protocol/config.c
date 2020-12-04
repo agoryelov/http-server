@@ -164,6 +164,7 @@ static void set_env_config(config *cfg) {
  * @param argv - arg values
  */
 static void set_cmd_line_config(config *cfg, int argc, char **argv) {
+    optind = 1;
     int opt;
     int opt_index = 0;
     int help_flag = 0;
