@@ -6,14 +6,14 @@
 
 typedef struct  {
     int is_occupied;
-	char *key;
-	char *value;
+    char *key;
+    char *value;
 } pair;
 
 typedef struct {
     unsigned int capacity;
-	unsigned int count;
-	pair * pairs;
+    unsigned int count;
+    pair * pairs;
     char ** keys;
 } str_map;
 
