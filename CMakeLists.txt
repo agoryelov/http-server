@@ -17,7 +17,7 @@ target_link_libraries(thread_pool http)
 target_compile_options(thread_pool PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(process_pool STATIC ./http_protocol/process_pool.c)
-target_link_libraries(process_pool http)
+target_link_libraries(process_pool http dc)
 target_compile_options(process_pool PRIVATE -Wpedantic -Wall -Wextra)
 
 add_library(http STATIC ./http_protocol/http.c)
