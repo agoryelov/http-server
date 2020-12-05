@@ -16,14 +16,21 @@
 static void set_default_config(config *cfg);
 static void set_file_config(config *cfg);
 static void set_env_config(config *cfg);
-static void set_cmd_line_config(config *cfg, int argc, char **argv);
+static void parse_cmd_line_options(config *cfg, int argc, char **argv);
+static void set_cmd_line_config(config *cfg, config *cmd_cfg);
 
-config *get_config(int argc, char **argv) {
-    config *cfg = malloc(sizeof(config));
+config *get_cmd_config(int argc, char **argv) {
+    config *cfg = calloc(1, sizeof(config));
+    parse_cmd_line_options(cfg, argc, argv);
+    return cfg;
+}
+
+config *get_config(config *cmd_cfg) {
+    config *cfg = calloc(1, sizeof(config));
     set_default_config(cfg);
     set_file_config(cfg);
     set_env_config(cfg);
-    set_cmd_line_config(cfg, argc, argv);
+    set_cmd_line_config(cfg, cmd_cfg);
     return cfg;
 }
 
@@ -49,8 +56,8 @@ static int is_valid_port(int port) {
  * @param mode - the mode
  * @return whether the mode is valid
  */
-static int is_valid_mode(const char *mode) {
-    return *mode == 'p' || *mode == 't';
+static int is_valid_mode(const char mode) {
+    return mode == 'p' || mode == 't';
 }
 
 /**
@@ -97,7 +104,7 @@ static void set_file_config(config *cfg) {
         }
     }
     if (config_lookup_string(&lib_config, "mode", &mode) != CONFIG_FALSE) {
-        if (is_valid_mode(mode)) {
+        if (is_valid_mode(mode[0])) {
             cfg->mode = (char) tolower(mode[0]);
         }
     }
@@ -135,7 +142,7 @@ static void set_env_config(config *cfg) {
         }
     }
     if ((env_var = getenv("DC_HTTP_MODE")) != NULL) {
-        if (is_valid_mode(env_var)) {
+        if (is_valid_mode(env_var[0])) {
             cfg->mode = (char) tolower(env_var[0]);
         }
     }
@@ -163,7 +170,7 @@ static void set_env_config(config *cfg) {
  * @param argc - arg count
  * @param argv - arg values
  */
-static void set_cmd_line_config(config *cfg, int argc, char **argv) {
+static void parse_cmd_line_options(config *cfg, int argc, char **argv) {
     optind = 1;
     int opt;
     int opt_index = 0;
@@ -174,9 +181,9 @@ static void set_cmd_line_config(config *cfg, int argc, char **argv) {
             {"index-page",     optional_argument, 0, 'i'},
             {"not-found-page", optional_argument, 0, 'n'},
     };
-
+    cfg->port = -1; // 0 is still "valid".
     while ((opt = getopt_long(argc, argv, "", long_options, &opt_index)) != -1) {
-        if (optarg == NULL) {
+        if (optarg == NULL || optarg[0] == '\0') {
             continue;
         }
 
@@ -192,7 +199,7 @@ static void set_cmd_line_config(config *cfg, int argc, char **argv) {
                 break;
             }
             case 'm':
-                if (is_valid_mode(optarg)) {
+                if (is_valid_mode(optarg[0])) {
                     cfg->mode = (char) tolower(optarg[0]);
                 }
                 break;
@@ -213,5 +220,26 @@ static void set_cmd_line_config(config *cfg, int argc, char **argv) {
             default:
                 break;
         }
+    }
+}
+
+static void set_cmd_line_config(config *cfg, config *cmd_cfg) {
+    if(is_valid_port(cmd_cfg->port)) {
+        cfg->port = cmd_cfg->port;
+    }
+    if(is_valid_mode(cmd_cfg->mode)) {
+        cfg->mode = cmd_cfg->mode;
+    }
+    if(is_valid_directory(cmd_cfg->root_dir)) {
+        free(cfg->root_dir);
+        cfg->root_dir = strdup(cmd_cfg->root_dir);
+    }
+    if(cmd_cfg->index_page != NULL) {
+        free(cfg->index_page);
+        cfg->index_page = cmd_cfg->index_page;
+    }
+    if(cmd_cfg->not_found_page != NULL) {
+        free(cfg->not_found_page);
+        cfg->not_found_page = cmd_cfg->not_found_page;
     }
 }

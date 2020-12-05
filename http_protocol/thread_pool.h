@@ -31,8 +31,7 @@ struct thread_pool {
     struct shared_data * data;
     pthread_t threads [NUM_THREADS];
     bool is_running;
-    char ** argv;
-    int argc;
+    config *cfg;
 };
 typedef struct thread_pool thread_pool;
 
@@ -57,11 +56,10 @@ void thread_pool_destroy(thread_pool* pool);
 /**
  * Creates thread_pool struct and sets it's values, the struct will be used to
  * control the threads.
- * @param argc
- * @param argv
+ * @param config
  * @return thread pool
  */
-thread_pool * thread_pool_create(int argc, char ** argv);
+thread_pool * thread_pool_create(config *cfg);
 /**
  * Used to pass a client over the thread pool struct and notify a single thread that
  * it can access the client fd through the uses of semaphores.

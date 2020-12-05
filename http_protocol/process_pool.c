@@ -40,11 +40,10 @@ static void send_socket(int http_client_fd);
  */
 static semaphores * create_semaphores();
 
-process_pool * process_pool_create(int argc, char ** argv) {
+process_pool * process_pool_create(config *cfg) {
     process_pool * pool = calloc(1, sizeof(process_pool));
     pool->sem = create_semaphores();
-    pool->argc = argc;
-    pool->argv = argv;
+    pool->cfg = cfg;
     memory *ptr;
     int shared_mem_fd = shm_open(SHMEM_HAME, O_CREAT | O_RDWR, 0666);
     ftruncate(shared_mem_fd, sizeof(memory));
@@ -191,7 +190,7 @@ static void worker_loop(process_pool * pool) {
         int main_process_fd = accept(worker_fd, NULL, NULL);
         int http_client_fd = worker_receive(main_process_fd);
 
-        config * conf = get_config(pool->argc, pool->argv);
+        config * conf = get_config(pool->cfg);
         http_handle_client(conf, http_client_fd);
         destroy_config(conf);
 
