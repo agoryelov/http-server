@@ -21,6 +21,7 @@ static void set_cmd_line_config(config *cfg, config *cmd_cfg);
 
 config *get_cmd_config(int argc, char **argv) {
     config *cfg = calloc(1, sizeof(config));
+    cfg->port = -1; // 0 is still "valid".
     parse_cmd_line_options(cfg, argc, argv);
     return cfg;
 }
@@ -183,7 +184,6 @@ static void parse_cmd_line_options(config *cfg, int argc, char **argv) {
             {"not-found-page", optional_argument, 0,          'n'},
             {"help",           no_argument,       &help_flag, 1}
     };
-    cfg->port = -1; // 0 is still "valid".
     while ((opt = getopt_long(argc, argv, "p:m:r:i:n:", long_options, &opt_index)) != -1) {
         if (help_flag) {
             fprintf(stdout, "%s", "Usage:\n\n");
