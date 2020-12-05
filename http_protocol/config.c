@@ -202,7 +202,7 @@ static void parse_cmd_line_options(config *cfg, int argc, char **argv) {
             fprintf(stdout, "%s", "DC_HTTP_ROOT_DIR                     Sets the directory the html files are served from.\n");
             fprintf(stdout, "%s", "DC_HTTP_INDEX_PAGE                   Sets the index page.\n");
             fprintf(stdout, "%s", "DC_HTTP_NOT_FOUND_PAGE               Sets the 404 page.\n\n");
-
+            destroy_config(cfg);
             exit(EXIT_SUCCESS);
         }
 
