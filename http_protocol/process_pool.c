@@ -160,7 +160,7 @@ static int worker_bind() {
     int socket_fd = dc_socket(AF_UNIX, SOCK_STREAM, 0);
 
 
-    dc_unlink(SOCKET_PATH);
+    unlink(SOCKET_PATH);
         
     memset(&addr, 0, sizeof(struct sockaddr_un));
     addr.sun_family = AF_UNIX;
