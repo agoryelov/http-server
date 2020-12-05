@@ -35,8 +35,7 @@ static void * thread_loop(void * arg){
 void thread_pool_start(thread_pool* pool){
     pool->is_running = true;
     for(int i = 0; i < NUM_THREADS; i++) {
-        pthread_t thread;
-        pool->threads[i] = dc_pthread_create(&thread, NULL, thread_loop, pool);   
+        dc_pthread_create(&pool->threads[i], NULL, thread_loop, pool);
     }
 }
 
