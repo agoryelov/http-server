@@ -47,8 +47,7 @@ typedef struct memory {
 typedef struct {
     semaphores * sem;
     memory * mem;
-    char ** argv;
-    int argc;
+    config * cfg;
 } process_pool;
 
 /**
@@ -72,11 +71,10 @@ void process_pool_destroy(process_pool * pool);
  * Sets up everything the process pool needs before starting and returns a
  * process pool struct holding the command line args and created shared memory for
  * managing whether or not the processes are running or not.
- * @param argc
- * @param argv
+ * @param config
  * @return process_pool
  */
-process_pool * process_pool_create(int argc, char ** argv);
+process_pool * process_pool_create(config *cfg);
 
 /**
  * Used to pass a client to a process through the uses of semaphores and domain sockets.

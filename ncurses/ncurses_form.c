@@ -23,7 +23,8 @@ void create_form(const ITEM *item, FIELD **field, FORM **form, WINDOW **header, 
     *sub = derwin(*header, height, width, 0, 0);
     field[0] = new_field(1, width - 12, 6, 6, 0, 0);
     field[1] = NULL;
-
+    wclear(*header);
+    wrefresh(*header);
     set_field_back(field[0], A_UNDERLINE);
     field_opts_off(field[0], O_STATIC);
     if (((config_item_t*)item_userptr(item))->field_type == TYPE_ENUM) {
@@ -60,16 +61,17 @@ void save_to_lib_config(MENU *menu, ITEM *item, char *value, config_t *lib_confi
     }
 
     trim_trailing_whitespace(value);
-    if (value[0] == '\0') value = EMPTY_DESCRIPTION;
     switch(config_item->config_type) {
         case CONFIG_TYPE_STRING:
             config_setting_set_string(setting, value);
+            if (value[0] == '\0') value = EMPTY_DESCRIPTION;
             update_main_menu(menu, item, value);
             break;
         case CONFIG_TYPE_INT: {
             int val = (int) strtoul(value, NULL, 0);
             if (val < 0) return;
             config_setting_set_int(setting, val);
+            if (value[0] == '\0') value = EMPTY_DESCRIPTION;
             update_main_menu(menu, item, val == 0 ? "0" : value);
             break;
         }
@@ -130,6 +132,8 @@ void init_item_form(MENU *menu, ITEM *item, config_t *lib_config)
     free_form(form);
     free_field(field[0]);
     free_field(field[1]);
+    wclear(header);
+    wrefresh(header);
     delwin(sub);
     delwin(header);
 }

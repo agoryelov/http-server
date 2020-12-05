@@ -23,13 +23,22 @@ typedef struct {
 void destroy_config(config *cfg);
 
 /**
+ * Gets the cmd line config.
+ * @param argc - argc
+ * @param argv - argv
+ * @return - the cmd line config
+ */
+config *get_cmd_config(int argc, char **argv);
+
+/**
  * Sets the config based on values in the order (smaller is set first):
  * 1) Default hard-coded values
  * 2) The config file
  * 3) Environment variables
  * 4) Command line arguments
+ * @param config - the config
  * @return - pointer to the config
  */
-config *get_config(int argc, char **argv);
+config *get_config(config *cmd_cfg);
 
 #endif

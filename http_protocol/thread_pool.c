@@ -25,7 +25,7 @@ static void * thread_loop(void * arg){
         dc_sem_post(&data->get_semaphore);
         dc_sem_post(&data->empty_semaphore);
 
-        config * conf = get_config(pool->argc, pool->argv);
+        config * conf = get_config(pool->cfg);
         http_handle_client(conf, cfd);
         destroy_config(conf);
 
@@ -71,12 +71,11 @@ void thread_pool_destroy(thread_pool * pool) {
     free(pool);
 }
 
-thread_pool * thread_pool_create(int argc, char ** argv) {
+thread_pool * thread_pool_create(config *cfg) {
     thread_pool *pool = calloc(1, sizeof(thread_pool));
     shared_data *data = calloc(1, sizeof(shared_data));
     pool->is_running = false;
-    pool->argc = argc;
-    pool->argv = argv;
+    pool->cfg = cfg;
 
     dc_sem_init(&data->occupied_semaphore, 0, 0);
     dc_sem_init(&data->empty_semaphore, 0, 1);
