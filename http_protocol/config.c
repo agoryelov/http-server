@@ -259,10 +259,10 @@ static void set_cmd_line_config(config *cfg, config *cmd_cfg) {
     }
     if(cmd_cfg->index_page != NULL) {
         free(cfg->index_page);
-        cfg->index_page = cmd_cfg->index_page;
+        cfg->index_page = strdup(cmd_cfg->index_page);
     }
     if(cmd_cfg->not_found_page != NULL) {
         free(cfg->not_found_page);
-        cfg->not_found_page = cmd_cfg->not_found_page;
+        cfg->not_found_page = strdup(cmd_cfg->not_found_page);
     }
 }
