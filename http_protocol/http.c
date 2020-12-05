@@ -1,12 +1,15 @@
 #include "http.h"
+
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
-
-#include <fcntl.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
+
+#include <dc/unistd.h>
+#include <dc/stdlib.h>
 
 #define CRLF "\r\n"
 #define BODY_BUFFER 256
@@ -153,7 +156,7 @@ void http_response_destroy(http_response * response) {
 
 static char * substring(const char * string, size_t start, size_t end) {
     size_t out_len = end - start;
-    char * out = malloc(out_len + 1);
+    char * out = calloc(out_len + 1, sizeof(char));
     for (size_t i = 0; i < out_len; i++) {
         out[i] = string[start + i];
     }
@@ -249,7 +252,7 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
 
     if( access( filepath_buf, F_OK ) != -1 ) {
         size_t filepath_len = strlen(filepath_buf);
-        *request_path = malloc(filepath_len + 1);
+        *request_path = calloc(filepath_len + 1, sizeof(char));
         strcpy(*request_path, filepath_buf);
         return 1;
     }
@@ -259,7 +262,7 @@ static int parse_uri_to_filepath(config * conf, char * request_uri, char ** requ
 
     if( access( filepath_buf, F_OK ) != -1 ) {
         size_t filepath_len = strlen(filepath_buf);
-        *request_path = malloc(filepath_len + 1);
+        *request_path = calloc(filepath_len + 1, sizeof(char));
         strcpy(*request_path, filepath_buf);
         return 0;
     }

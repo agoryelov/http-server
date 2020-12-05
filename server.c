@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/socket.h>
+
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <errno.h>
+
+#include <dc/sys/socket.h>
 
 #include "http_protocol/thread_pool.h"
 #include "http_protocol/process_pool.h"
@@ -55,6 +57,7 @@ int main(int argc, char **argv) {
             thread_pool_destroy(t_pool);
         }
     }
+    close(server_fd);
     destroy_config(cmd_conf);
     destroy_config(conf);
     
@@ -66,14 +69,14 @@ static int create_server_fd(int port) {
     int sfd;
     signal(SIGPIPE, SIG_IGN);
 
-    sfd = socket(AF_INET, SOCK_STREAM, 0);
+    sfd = dc_socket(AF_INET, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     int optval = 1;
     setsockopt(sfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
-    bind(sfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
-    listen(sfd, BACKLOG);
+    dc_bind(sfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+    dc_listen(sfd, BACKLOG);
     return sfd;
 }

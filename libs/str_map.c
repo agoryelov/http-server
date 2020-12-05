@@ -14,11 +14,11 @@ static void sm_swap(str_map * left, str_map * right);
 static pair * sm_get_pair(str_map * map, char * key);
 
 str_map * sm_create(size_t capacity) {
-    str_map * map = malloc(sizeof(str_map));
+    str_map * map = dc_malloc(sizeof(str_map));
     map->capacity = capacity;
     map->count = 0;
-    map->pairs = malloc(map->capacity * sizeof(pair));
-    map->keys = malloc(map->capacity * sizeof(char *));
+    map->pairs = dc_malloc(map->capacity * sizeof(pair));
+    map->keys = dc_malloc(map->capacity * sizeof(char *));
 
     memset(map->pairs, 0, map->capacity * sizeof(pair));
     memset(map->keys, 0, map->capacity * sizeof(char *));
@@ -60,18 +60,14 @@ char * sm_get(str_map * map, char * key) {
 }
 
 int sm_exists(str_map * map, char * key) {
-    
-    if (map == NULL) {
+    if (map == NULL) 
         return 0;
-    }
 
-    if (key == NULL) {
+    if (key == NULL) 
         return 0;
-    }
     
-    if (sm_get_pair(map, key) == NULL) {
+    if (sm_get_pair(map, key) == NULL) 
         return 0;
-    }
     
     return 1;
 }
@@ -211,7 +207,7 @@ static unsigned long hash(const char *str)
 	unsigned long hash = 5381;
 	int c;
 
-	while (c = *str++) {
+	while ((c = *str++)) {
 		hash = ((hash << 5) + hash) + c;
 	}
 	return hash;
