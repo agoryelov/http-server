@@ -67,6 +67,7 @@ static int is_valid_mode(const char mode) {
  * @return whether the path is valid
  */
 static int is_valid_directory(const char *path) {
+    if (path == NULL) return 0;
     struct stat s;
     return !(stat(path, &s) != 0 || !S_ISDIR(s.st_mode));
 }
