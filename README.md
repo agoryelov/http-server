@@ -2,7 +2,7 @@
 [Report Bug](https://github.com/agoryelov/COMP4981_HTTP/issues) - [Request Feature](https://github.com/agoryelov/COMP4981_HTTP/issues)
 
 ## About this project
-This is an HTTP Server written purely in C that supports HTTP/1.0 protocol. You can configure the server using a build-in CLI.
+This is an HTTP Server written in C that supports HTTP/1.0 protocol. You can configure the server using a build-in CLI.
 
 ### Key Features
 * Fully supported HTTP GET and HTTP HEAD methods
